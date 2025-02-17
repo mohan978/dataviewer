@@ -110,7 +110,7 @@ function getFirestoreData( passedValue, passedObj )
 		*/
         });
 		
-		for( var tradingDate of firestoreIndexObj[monthYearCollection]['trading_dates'] )
+		for( var tradingDate of (firestoreIndexObj[monthYearCollection]['trading_dates']).sort().reverse())
 		{
 		const optionElement = document.createElement("option");
 		optionElement.text = tradingDate;
