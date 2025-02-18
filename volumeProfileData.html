@@ -148,6 +148,7 @@ body {
  <button onclick="showPerticularStocksEquityDataInTable()">GO</button>
  </span>
 <div class="spaceBetweenTables">  	<div id="perticularEquityTableContainer"></div> </div>
+<div class="spaceBetweenTables">  	<div id="perticularEquityTableContainer2"></div> </div>
 </center>
 
 
@@ -1617,7 +1618,8 @@ function formatDateTime(timestamp) {
 					var bid = tick['rate'][1]
 					total_ask_bid['ask'] += ask
 					total_ask_bid['bid'] += bid
-					var priceRange = priceLow +'-'+ priceHigh
+					//var priceRange = priceLow +'-'+ priceHigh
+					var priceRange = priceLow 
 					
 					if(single_candle_volume_profile_price_obj[priceRange] ==undefined )
 					{
@@ -1653,6 +1655,9 @@ function formatDateTime(timestamp) {
 				{
 					candlewise_highest_vol_price_obj2 [candleTime]  = returnedArray
 				}
+				
+				candlewise_highest_vol_price_obj2 [candleTime] ['total_ask'] = total_ask_bid['ask']
+				candlewise_highest_vol_price_obj2 [candleTime] ['total_bid'] = total_ask_bid['bid']
 				
 				
 				if( highest_vol_price_arr.length==0 )
@@ -1709,8 +1714,10 @@ function formatDateTime(timestamp) {
 			//sortByVolumeSumDescending2( candlewise_highest_vol_price_obj ),
 			candlewise_highest_vol_price_obj2,
 			*/
-//console.log(  "highest_vol_price_arr", highest_vol_price_arr)
-//console.log(  "candlewise_highest_vol_price_obj2", candlewise_highest_vol_price_obj2)
+console.log(  "highest_vol_price_arr", highest_vol_price_arr)
+console.log(  "candlewise_highest_vol_price_obj", candlewise_highest_vol_price_obj)
+console.log(  "candlewise_highest_vol_price_obj2", candlewise_highest_vol_price_obj2)
+console.log(  "total_volume_profile_price_obj", total_volume_profile_price_obj)
 
 	
 	
@@ -1720,11 +1727,72 @@ function formatDateTime(timestamp) {
 	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
 	var theadStr = '<thead class="tableRowClass">   <tr>      '
 	+'<th>Time</th>'
+	+'<th>Buy</th>'	//ask
+	+'<th>Sell</th>' //bid
 	
 	+' <th>Data</th>'
 	
 	+' </tr></thead><tbody>'
 	var tableStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="perticularStockMarketDepthOrderBookTableStr"><caption style="caption-side:top"> Market Depth Orders | '+selectedEquitySymbol+' | '+selectedTradingDate+' | '+'</caption>'+theadStr 
+	//var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	 
+	//for ( var candleTime2 in candlewise_highest_vol_price_obj2 ) 
+	{
+	var candleTime2 = Object.keys(candlewise_highest_vol_price_obj2)[Object.keys(candlewise_highest_vol_price_obj2).length-1]
+	console.log("candleTime2", candleTime2)
+	var dataArray = candlewise_highest_vol_price_obj2[candleTime2]
+	
+	tableStr += '<tr class="item"><td>'
+		//+ timeStampPrevious1+'-'+timeStamp
+		+ candleTime2
+		+'</td><td>'
+		+ dataArray['total_ask']
+		+'</td><td>'
+		+ dataArray['total_bid']		
+		//+ timeStampOfData
+		+'</td><td><table>'
+		
+	for(var element of dataArray )
+	{
+	
+		tableStr += '<tr>'
+		+'<td>'
+		+ element[0]
+		+'</td>'        
+		
+		+'<td>'
+		+ element[1][0] 
+		+'</td>'    
+		
+		+'<td>'
+		+ element[1][1] 
+		+'</td>'        
+		
+		+'</tr>'
+		
+	}
+	
+	tableStr +='</table></td></tr>'
+
+		
+		
+	}
+	
+	tableStr +=' </tbody> </table>    </div>  </div>'
+	//optOILosersTablesStr +=' </tbody> </table>    </div>  </div>'
+	
+	 document.getElementById('perticularEquityTableContainer').innerHTML = tableStr;
+	 //document.getElementById('allSpurtsUnderlyingsColumnsContainer').innerHTML += tablesStrForNegative;
+	 
+	
+	var theadStr = '<thead class="tableRowClass">   <tr>      '
+	+'<th>Time</th>'
+	+'<th>Buy</th>'	//ask
+	+'<th>Sell</th>' //bid
+	+' <th>Data</th>'
+	
+	+' </tr></thead><tbody>'
+	var tableStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="perticularStockMarketDepthOrderBookTableStr2"><caption style="caption-side:top"> Market Depth Orders | '+selectedEquitySymbol+' | '+selectedTradingDate+' | '+'</caption>'+theadStr 
 	//var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
 	 
 	for ( var candleTime2 in candlewise_highest_vol_price_obj2 ) {
@@ -1734,9 +1802,12 @@ function formatDateTime(timestamp) {
 	tableStr += '<tr class="item"><td>'
 		//+ timeStampPrevious1+'-'+timeStamp
 		+ candleTime2
+		+'</td><td>'
+		+ dataArray['total_ask']
+		+'</td><td>'
+		+ dataArray['total_bid']		
 		//+ timeStampOfData
 		+'</td><td><table>'
-		
 		
 	for(var element of dataArray )
 	{
@@ -1768,7 +1839,7 @@ function formatDateTime(timestamp) {
 	tableStr +=' </tbody> </table>    </div>  </div>'
 	//optOILosersTablesStr +=' </tbody> </table>    </div>  </div>'
 	
-	 document.getElementById('perticularEquityTableContainer').innerHTML = tableStr;
+	 document.getElementById('perticularEquityTableContainer2').innerHTML = tableStr;
 	 //document.getElementById('allSpurtsUnderlyingsColumnsContainer').innerHTML += tablesStrForNegative;
 	 
 	
