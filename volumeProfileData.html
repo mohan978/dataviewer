@@ -88,6 +88,12 @@ body {
 	
 }
 
+th, td {
+    //border: 1px solid black;
+    //padding: 2px;
+    //text-align: left;  /* Align text to the left */
+    vertical-align: top;  /* Align content to the top */
+}
 
 </style>
 
@@ -1597,7 +1603,8 @@ function formatDateTime(timestamp) {
 		
 	//for( var c in currentDayData ){
 	
-		var candleTime = formatDateTime( Number(c) ).split(' ')[1]; // 1738813500000 Output: 2025-03-08 13:45:00
+		//var candleTime = formatDateTime( Number(c) ).split(' ')[1]; // 1738813500000 Output: 2025-03-08 13:45:00
+		var candleTime = formatDateTime( Number(c) ).split(' ')[1].replace(':00', ''); // 1738813500000 Output: 2025-03-08 13:45:00
 		//console.log( candleTime, currentDayData[c] )
 		//console.log("candleTime", candleTime)
 		if( currentDayData[c]['graphicsCmds'] !=undefined )
@@ -1656,9 +1663,11 @@ function formatDateTime(timestamp) {
 					candlewise_highest_vol_price_obj2 [candleTime]  = returnedArray
 				}
 				
+				var sorted_total_volume_profile_price_obj = sortByVolumeSumDescending( total_volume_profile_price_obj )
+				
 				candlewise_highest_vol_price_obj2 [candleTime] ['total_ask'] = total_ask_bid['ask']
 				candlewise_highest_vol_price_obj2 [candleTime] ['total_bid'] = total_ask_bid['bid']
-				
+				candlewise_highest_vol_price_obj2 [candleTime] ['poc'] = sorted_total_volume_profile_price_obj[0]
 				
 				if( highest_vol_price_arr.length==0 )
 				{
@@ -1713,12 +1722,15 @@ function formatDateTime(timestamp) {
 			//candlewise_highest_vol_price_obj,
 			//sortByVolumeSumDescending2( candlewise_highest_vol_price_obj ),
 			candlewise_highest_vol_price_obj2,
-			*/
+			
 console.log(  "highest_vol_price_arr", highest_vol_price_arr)
 console.log(  "candlewise_highest_vol_price_obj", candlewise_highest_vol_price_obj)
 console.log(  "candlewise_highest_vol_price_obj2", candlewise_highest_vol_price_obj2)
 console.log(  "total_volume_profile_price_obj", total_volume_profile_price_obj)
 
+var sorted_total_volume_profile_price_obj = sortByVolumeSumDescending( total_volume_profile_price_obj )
+console.log(  "sorted_total_volume_profile_price_obj", sorted_total_volume_profile_price_obj)
+*/
 	
 	
 	//var timestamp = allEquityDataObj['timestamp']['data'].split(' ')[1]
@@ -1729,6 +1741,7 @@ console.log(  "total_volume_profile_price_obj", total_volume_profile_price_obj)
 	+'<th>Time</th>'
 	+'<th>Buy</th>'	//ask
 	+'<th>Sell</th>' //bid
+	+'<th>POC</th>' //bid
 	
 	+' <th>Data</th>'
 	
@@ -1739,7 +1752,7 @@ console.log(  "total_volume_profile_price_obj", total_volume_profile_price_obj)
 	//for ( var candleTime2 in candlewise_highest_vol_price_obj2 ) 
 	{
 	var candleTime2 = Object.keys(candlewise_highest_vol_price_obj2)[Object.keys(candlewise_highest_vol_price_obj2).length-1]
-	console.log("candleTime2", candleTime2)
+	//console.log("candleTime2", candleTime2)
 	var dataArray = candlewise_highest_vol_price_obj2[candleTime2]
 	
 	tableStr += '<tr class="item"><td>'
@@ -1748,7 +1761,9 @@ console.log(  "total_volume_profile_price_obj", total_volume_profile_price_obj)
 		+'</td><td>'
 		+ dataArray['total_ask']
 		+'</td><td>'
-		+ dataArray['total_bid']		
+		+ dataArray['total_bid']
+		+'</td><td>'
+		+ dataArray['poc'][0]
 		//+ timeStampOfData
 		+'</td><td><table>'
 		
@@ -1765,7 +1780,15 @@ console.log(  "total_volume_profile_price_obj", total_volume_profile_price_obj)
 		+'</td>'    
 		
 		+'<td>'
-		+ element[1][1] 
+		+ element[1][1][0]
+		+'</td>'       
+
+		+'<td>'
+		+ element[1][1][1]
+		+'</td>'        
+		
+		+'<td>'
+		+ element[1][1][2]
 		+'</td>'        
 		
 		+'</tr>'
@@ -1789,6 +1812,7 @@ console.log(  "total_volume_profile_price_obj", total_volume_profile_price_obj)
 	+'<th>Time</th>'
 	+'<th>Buy</th>'	//ask
 	+'<th>Sell</th>' //bid
+	+'<th>POC</th>' //bid
 	+' <th>Data</th>'
 	
 	+' </tr></thead><tbody>'
@@ -1805,7 +1829,9 @@ console.log(  "total_volume_profile_price_obj", total_volume_profile_price_obj)
 		+'</td><td>'
 		+ dataArray['total_ask']
 		+'</td><td>'
-		+ dataArray['total_bid']		
+		+ dataArray['total_bid']
+		+'</td><td>'
+		+ dataArray['poc'][0]
 		//+ timeStampOfData
 		+'</td><td><table>'
 		
@@ -1823,7 +1849,15 @@ console.log(  "total_volume_profile_price_obj", total_volume_profile_price_obj)
 		+'</td>'    
 		
 		+'<td>'
-		+ element[1][1] 
+		+ element[1][1][0]
+		+'</td>'       
+
+		+'<td>'
+		+ element[1][1][1]
+		+'</td>'        
+		
+		+'<td>'
+		+ element[1][1][2]
 		+'</td>'        
 		
 		+'</tr>'
