@@ -1741,6 +1741,7 @@ console.log(  "sorted_total_volume_profile_price_obj", sorted_total_volume_profi
 	+'<th>Time</th>'
 	+'<th>Buy</th>'	//ask
 	+'<th>Sell</th>' //bid
+	+'<th>Ratio</th>' //bid
 	+'<th>POC</th>' //bid
 	
 	+' <th>Data</th>'
@@ -1754,6 +1755,16 @@ console.log(  "sorted_total_volume_profile_price_obj", sorted_total_volume_profi
 	var candleTime2 = Object.keys(candlewise_highest_vol_price_obj2)[Object.keys(candlewise_highest_vol_price_obj2).length-1]
 	//console.log("candleTime2", candleTime2)
 	var dataArray = candlewise_highest_vol_price_obj2[candleTime2]
+	var ratio = ''
+	if( dataArray['total_ask'] >= dataArray['total_bid'] )
+	{
+		ratio = (dataArray['total_ask']/dataArray['total_bid']).toFixed(2) + ' Buy'
+	}
+	else
+	{
+		ratio = (dataArray['total_bid']/dataArray['total_ask']).toFixed(2) + ' Sell'
+	}
+	
 	
 	tableStr += '<tr class="item"><td>'
 		//+ timeStampPrevious1+'-'+timeStamp
@@ -1763,12 +1774,15 @@ console.log(  "sorted_total_volume_profile_price_obj", sorted_total_volume_profi
 		+'</td><td>'
 		+ dataArray['total_bid']
 		+'</td><td>'
+		+ ratio
+		+'</td><td>'
 		+ dataArray['poc'][0]
 		//+ timeStampOfData
 		+'</td><td><table>'
 		
 	for(var element of dataArray )
 	{
+
 	
 		tableStr += '<tr>'
 		+'<td>'
@@ -1812,6 +1826,7 @@ console.log(  "sorted_total_volume_profile_price_obj", sorted_total_volume_profi
 	+'<th>Time</th>'
 	+'<th>Buy</th>'	//ask
 	+'<th>Sell</th>' //bid
+	+'<th>Ratio</th>' //bid
 	+'<th>POC</th>' //bid
 	+' <th>Data</th>'
 	
@@ -1822,6 +1837,15 @@ console.log(  "sorted_total_volume_profile_price_obj", sorted_total_volume_profi
 	for ( var candleTime2 in candlewise_highest_vol_price_obj2 ) {
 	
 	var dataArray = candlewise_highest_vol_price_obj2[candleTime2]
+	var ratio = ''
+	if( dataArray['total_ask'] >= dataArray['total_bid'] )
+	{
+		ratio = (dataArray['total_ask']/dataArray['total_bid']).toFixed(2) + ' Buy'
+	}
+	else
+	{
+		ratio = (dataArray['total_bid']/dataArray['total_ask']).toFixed(2) + ' Sell'
+	}
 	
 	tableStr += '<tr class="item"><td>'
 		//+ timeStampPrevious1+'-'+timeStamp
@@ -1830,6 +1854,8 @@ console.log(  "sorted_total_volume_profile_price_obj", sorted_total_volume_profi
 		+ dataArray['total_ask']
 		+'</td><td>'
 		+ dataArray['total_bid']
+		+'</td><td>'
+		+ ratio
 		+'</td><td>'
 		+ dataArray['poc'][0]
 		//+ timeStampOfData
