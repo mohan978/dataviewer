@@ -1701,6 +1701,8 @@ function formatDateTime(timestamp) {
 	var last_ask_price = 0
 	var last_bid_price = 0
 	
+	var last_price = 0
+	
 	var delta_candlewise_total_volume_profile_price_obj = {}
 	var temp_total_volume_profile_price_obj = {}
 	
@@ -1709,7 +1711,7 @@ function formatDateTime(timestamp) {
 	
 	
 	for( var i=0;i<Object.keys(currentDayData).length;i++ ){
-	//for( var i=0;i<2;i++ ){
+	//for( var i=0;i<15;i++ ){
 		var c = Object.keys(currentDayData)[i]
 		//console.log("c", c)
 	
@@ -1754,6 +1756,7 @@ function formatDateTime(timestamp) {
 					//var priceRange = priceLow +'-'+ priceHigh
 					var priceRange = priceLow 
 					
+					last_price = priceRange
 					
 					if( ask>0 )
 					{
@@ -1801,7 +1804,9 @@ function formatDateTime(timestamp) {
 					}
 					else
 					{
-						temp_total_volume_profile_price_obj[priceRange][ 'cumulative_delta' ] += (ask - bid)
+						//console.log( "temp_total_volume_profile_price_obj[priceRange][ 'cumulative_delta' ] ", priceRange ,  temp_total_volume_profile_price_obj[priceRange][ 'cumulative_delta' ],  (ask - bid)  )
+						temp_total_volume_profile_price_obj[priceRange][ 'cumulative_delta' ]  =( temp_total_volume_profile_price_obj[priceRange][ 'cumulative_delta' ] )+ (ask - bid)
+						//console.log( priceRange ,  temp_total_volume_profile_price_obj[priceRange][ 'cumulative_delta' ]  )
 					}
 					
 					
@@ -1867,6 +1872,7 @@ function formatDateTime(timestamp) {
 					'total_ask':  total_ask_bid['ask'],
 					'total_bid':  total_ask_bid['bid'],
 					"delta_candlewise_total_volume_profile_price_obj": Object.assign({}, temp_total_volume_profile_price_obj),
+					//"delta_candlewise_total_volume_profile_price_obj": Object.assign({}, delta_candlewise_total_volume_profile_price_obj),
 				}
 				
 				
@@ -1874,9 +1880,9 @@ function formatDateTime(timestamp) {
 				//var returnedArray = sortByVolumeSumDescending2( candlewise_highest_vol_price_obj )
 				var returnedArray = sortByAskBidTotalDescending( candlewise_highest_vol_price_obj )
 				
-				if(returnedArray.length>10)
+				if(returnedArray.length>12)
 				{
-					candlewise_highest_vol_price_obj2 [candleTime]  = returnedArray.slice(0,10)
+					candlewise_highest_vol_price_obj2 [candleTime]  = returnedArray.slice(0,12)
 				}
 				else
 				{
@@ -1891,6 +1897,7 @@ function formatDateTime(timestamp) {
 				candlewise_highest_vol_price_obj2 [candleTime] ['cumulative_delta'] = cumulative_delta
 				candlewise_highest_vol_price_obj2 [candleTime] ['overall_delta'] = overall_delta
 				candlewise_highest_vol_price_obj2 [candleTime] ['ask_bid_spread'] = ask_bid_spread
+				candlewise_highest_vol_price_obj2 [candleTime] ['last_price'] = last_price
 				
 				if( highest_vol_price_arr.length==0 )
 				{
@@ -1962,8 +1969,17 @@ console.log(  "delta_candlewise_total_volume_profile_price_obj", delta_candlewis
 
 console.log(  "highest_ask_bid_orders_tick_wise_obj", highest_ask_bid_orders_tick_wise_obj)
 console.log(  "highest_ask_bid_orders_whole_candle_wise_obj", highest_ask_bid_orders_whole_candle_wise_obj)
+
+
+	console.log(  "highest_vol_price_arr", highest_vol_price_arr)
+console.log(  "candlewise_highest_vol_price_obj", candlewise_highest_vol_price_obj)
+console.log(  "candlewise_highest_vol_price_obj2", candlewise_highest_vol_price_obj2)
+console.log(  "total_volume_profile_price_obj", total_volume_profile_price_obj)
+console.log(  "delta_candlewise_total_volume_profile_price_obj", delta_candlewise_total_volume_profile_price_obj)
+
+	console.log(  "delta_candlewise_total_volume_profile_price_obj", delta_candlewise_total_volume_profile_price_obj)
 */
-	
+
 	//var timestamp = allEquityDataObj['timestamp']['data'].split(' ')[1]
 	
 	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
@@ -1974,12 +1990,14 @@ console.log(  "highest_ask_bid_orders_whole_candle_wise_obj", highest_ask_bid_or
 	+'<th>Sell</th>' //bid
 	+'<th>Ratio</th>' //bid
 	+'<th>C.Delta</th>' //bid
-	+'<th>O.Delta</th>' //bid
+	//+'<th>O.Delta</th>' //bid
 	+'<th>POC</th>' //bid
-	+'<th>Spread</th>' //bid
+	//+'<th>Spread</th>' //bid
+	//+'<th>LTP</th>' //bid
 	
 	
 	+' <th>Data</th>'
+	+' <th>Data2</th>'
 	
 	+' </tr></thead><tbody>'
 	var tableStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="perticularStockMarketDepthOrderBookTableStr"><caption style="caption-side:top"> Market Depth Orders | '+selectedEquitySymbol+' | '+selectedTradingDate+' | '+'</caption>'+theadStr 
@@ -1990,6 +2008,8 @@ console.log(  "highest_ask_bid_orders_whole_candle_wise_obj", highest_ask_bid_or
 	var candleTime2 = Object.keys(candlewise_highest_vol_price_obj2)[Object.keys(candlewise_highest_vol_price_obj2).length-1]
 	//console.log("candleTime2", candleTime2)
 	var dataArray = candlewise_highest_vol_price_obj2[candleTime2]
+	var ltp = dataArray['last_price']
+	//console.log( "dataArray", dataArray )
 	var ratio = ''
 	if( dataArray['total_ask'] >= dataArray['total_bid'] )
 	{
@@ -2016,12 +2036,14 @@ console.log(  "highest_ask_bid_orders_whole_candle_wise_obj", highest_ask_bid_or
 		+ ratio
 		+'</td><td>'
 		+ dataArray['cumulative_delta']
-		+'</td><td>'
-		+ dataArray['overall_delta']
+		//+'</td><td>'
+		//+ dataArray['overall_delta']
 		+'</td><td>'
 		+ dataArray['poc'][0]
-		+'</td><td>'
-		+ dataArray['ask_bid_spread']
+		//+'</td><td>'
+		//+ dataArray['ask_bid_spread']
+		//+'</td><td>'
+		//+ dataArray['last_price']
 		
 		//+ timeStampOfData
 		+'</td><td><table>'
@@ -2037,8 +2059,38 @@ console.log(  "highest_ask_bid_orders_whole_candle_wise_obj", highest_ask_bid_or
 		+'<th>CngSell</th>' //bid
 		
 		+' </tr></thead><tbody>'
+			//console.log( "dataArray", dataArray )
 			
+			
+	var prices_above_ltp = []
+	var prices_below_ltp = []
+	
 	for(var element of dataArray )
+	{
+		var priceRange =  element[1] ['HighestVolBar'] ['priceRange']
+	
+		
+		if( priceRange>=ltp )
+		{
+			prices_above_ltp.push(element)
+		}
+		else
+		{
+			prices_below_ltp.push(element)
+		}
+	}
+	prices_above_ltp = prices_above_ltp.sort((a, b) => parseFloat(b[1].HighestVolBar.priceRange) - parseFloat(a[1].HighestVolBar.priceRange))
+	prices_below_ltp = prices_below_ltp.sort((a, b) => parseFloat(b[1].HighestVolBar.priceRange) - parseFloat(a[1].HighestVolBar.priceRange))
+	//console.log( "prices_above_ltp", prices_above_ltp )
+	//console.log( "prices_below_ltp", prices_below_ltp )
+
+// Sort in descending order
+//data.sort((a, b) => parseFloat(b[1].HighestVolBar.priceRange) - parseFloat(a[1].HighestVolBar.priceRange));
+
+
+			
+	
+	for(var element of prices_above_ltp )
 	{
 
 		var priceRange =  element[1] ['HighestVolBar'] ['priceRange']
@@ -2052,7 +2104,8 @@ console.log(  "highest_ask_bid_orders_whole_candle_wise_obj", highest_ask_bid_or
 		+'</td>'    
 		
 		+'<td>'
-		+ element[1] ['delta_candlewise_total_volume_profile_price_obj'] [priceRange] ['cumulative_delta'] 
+		//+ element[1] ['delta_candlewise_total_volume_profile_price_obj'] [priceRange] ['cumulative_delta'] 
+		+ ( element[1] ['HighestVolBar'] ['ask'] - element[1] ['HighestVolBar'] ['bid'] )
 		+'</td>'    
 		
 		+'<td>'
@@ -2079,6 +2132,118 @@ console.log(  "highest_ask_bid_orders_whole_candle_wise_obj", highest_ask_bid_or
 		
 	}
 	
+	tableStr += '<tr>'
+		+'<td>'
+		+ "LTP"
+		+'</td>'
+		+'<td>'
+		+ ltp 
+		+'</td></tr>'        
+		
+	for(var element of prices_below_ltp )
+	{
+
+		var priceRange =  element[1] ['HighestVolBar'] ['priceRange']
+		tableStr += '<tr>'
+		+'<td>'
+		+ element[0]
+		+'</td>'        
+		
+		+'<td>'
+		+ priceRange
+		+'</td>'    
+		
+		+'<td>'
+		//+ element[1] ['delta_candlewise_total_volume_profile_price_obj'] [priceRange] ['cumulative_delta'] 
+		+ ( element[1] ['HighestVolBar'] ['ask'] - element[1] ['HighestVolBar'] ['bid'] )
+		+'</td>'    
+		
+		+'<td>'
+		+ element[1] ['HighestVolBar'] ['ask']
+		+'</td>'       
+
+		+'<td>'
+		+ element[1] ['HighestVolBar'] ['bid']
+		+'</td>'        
+		
+		+'<td>'
+		+ element[1] ['HighestVolBar'] ['askBidTotal']
+		+'</td>'        
+		
+		+'<td>'
+		+ (dataArray['total_ask'] - element[1]['total_ask'])
+		+'</td>'        
+		
+		+'<td>'
+		+ (dataArray['total_bid'] - element[1]['total_bid'])
+		+'</td>'        
+		
+		+'</tr>'
+		
+	}
+	
+	tableStr +='</tbody></table></td>'
+	
++'<td><table>'
+		
+		 +'<thead class="tableRowClass">   <tr>      '
+		+'<th>Time</th>'
+		+'<th>Price</th>'	//ask
+		+'<th>Delta</th>' //bid
+		+'<th>Buy</th>' //bid
+		+'<th>Sell</th>' //bid
+		+'<th>Tot</th>' //bid
+		+'<th>CngBuy</th>' //bid
+		+'<th>CngSell</th>' //bid
+		
+		+' </tr></thead><tbody>'
+			//console.log( "dataArray", dataArray )
+		
+		
+	for(var element of dataArray )
+	{
+
+		var priceRange =  element[1] ['HighestVolBar'] ['priceRange']
+		tableStr += '<tr>'
+		+'<td>'
+		+ element[0]
+		+'</td>'        
+		
+		+'<td>'
+		+ priceRange
+		+'</td>'    
+		
+		+'<td>'
+		//+ element[1] ['delta_candlewise_total_volume_profile_price_obj'] [priceRange] ['cumulative_delta'] 
+		+ ( element[1] ['HighestVolBar'] ['ask'] - element[1] ['HighestVolBar'] ['bid'] )
+		+'</td>'    
+		
+		+'<td>'
+		+ element[1] ['HighestVolBar'] ['ask']
+		+'</td>'       
+
+		+'<td>'
+		+ element[1] ['HighestVolBar'] ['bid']
+		+'</td>'        
+		
+		+'<td>'
+		+ element[1] ['HighestVolBar'] ['askBidTotal']
+		+'</td>'        
+		
+		+'<td>'
+		+ (dataArray['total_ask'] - element[1]['total_ask'])
+		+'</td>'        
+		
+		+'<td>'
+		+ (dataArray['total_bid'] - element[1]['total_bid'])
+		+'</td>'        
+		
+		+'</tr>'
+		
+	}
+	
+	
+	
 	tableStr +='</tbody></table></td></tr>'
 
 		
@@ -2099,16 +2264,20 @@ console.log(  "highest_ask_bid_orders_whole_candle_wise_obj", highest_ask_bid_or
 	+'<th>Ratio</th>' //bid
 	
 	+'<th>C.Delta</th>' //bid
-	+'<th>O.Delta</th>' //bid
+	//+'<th>O.Delta</th>' //bid
 	+'<th>POC</th>' //bid
-	+'<th>Spread</th>' //bid
+	//+'<th>Spread</th>' //bid
+	//+'<th>LTP</th>' //bid
+	
 	+' <th>Data</th>'
+	+' <th>Data2</th>'
 	
 	+' </tr></thead><tbody>'
 	var tableStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="perticularStockMarketDepthOrderBookTableStr2"><caption style="caption-side:top"> Market Depth Orders | '+selectedEquitySymbol+' | '+selectedTradingDate+' | '+'</caption>'+theadStr 
 	//var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
 	 
 	for ( var candleTime2 in candlewise_highest_vol_price_obj2 ) {
+	
 	
 	var dataArray = candlewise_highest_vol_price_obj2[candleTime2]
 	var ratio = ''
@@ -2120,6 +2289,7 @@ console.log(  "highest_ask_bid_orders_whole_candle_wise_obj", highest_ask_bid_or
 	{
 		ratio = (dataArray['total_bid']/dataArray['total_ask']).toFixed(2) + ' Sell'
 	}
+	var ltp = dataArray['last_price']
 	
 	tableStr += '<tr class="item"><td>'
 		//+ timeStampPrevious1+'-'+timeStamp
@@ -2132,15 +2302,157 @@ console.log(  "highest_ask_bid_orders_whole_candle_wise_obj", highest_ask_bid_or
 		+ ratio
 		+'</td><td>'
 		+ dataArray['cumulative_delta']
-		+'</td><td>'
-		+ dataArray['overall_delta']
+		//+'</td><td>'
+		//+ dataArray['overall_delta']
 		+'</td><td>'
 		+ dataArray['poc'][0]
-		+'</td><td>'
-		+ dataArray['ask_bid_spread']
+		//+'</td><td>'
+		//+ dataArray['ask_bid_spread']
+		//+'</td><td>'
+		//+ dataArray['last_price']
 		
 		//+ timeStampOfData
 		+'</td><td><table>'
+		
+		 +'<thead class="tableRowClass">   <tr>      '
+		+'<th>Time</th>'
+		+'<th>Price</th>'	//ask
+		+'<th>Delta</th>' //bid
+		+'<th>Buy</th>' //bid
+		+'<th>Sell</th>' //bid
+		+'<th>Tot</th>' //bid
+		//+'<th>CngBuy</th>' //bid
+		//+'<th>CngSell</th>' //bid
+		
+		+' </tr></thead><tbody>'
+			
+			
+			
+			
+	var prices_above_ltp = []
+	var prices_below_ltp = []
+	
+	for(var element of dataArray )
+	{
+		var priceRange =  element[1] ['HighestVolBar'] ['priceRange']
+	
+		
+		if( priceRange>=ltp )
+		{
+			prices_above_ltp.push(element)
+		}
+		else
+		{
+			prices_below_ltp.push(element)
+		}
+	}
+	prices_above_ltp = prices_above_ltp.sort((a, b) => parseFloat(b[1].HighestVolBar.priceRange) - parseFloat(a[1].HighestVolBar.priceRange))
+	prices_below_ltp = prices_below_ltp.sort((a, b) => parseFloat(b[1].HighestVolBar.priceRange) - parseFloat(a[1].HighestVolBar.priceRange))
+	//console.log( "prices_above_ltp", prices_above_ltp )
+	//console.log( "prices_below_ltp", prices_below_ltp )
+
+// Sort in descending order
+//data.sort((a, b) => parseFloat(b[1].HighestVolBar.priceRange) - parseFloat(a[1].HighestVolBar.priceRange));
+
+
+			
+	
+	for(var element of prices_above_ltp )
+	{
+
+		var priceRange =  element[1] ['HighestVolBar'] ['priceRange']
+		tableStr += '<tr>'
+		+'<td>'
+		+ element[0]
+		+'</td>'        
+		
+		+'<td>'
+		+ priceRange
+		+'</td>'    
+		
+		+'<td>'
+		//+ element[1] ['delta_candlewise_total_volume_profile_price_obj'] [priceRange] ['cumulative_delta'] 
+		+ ( element[1] ['HighestVolBar'] ['ask'] - element[1] ['HighestVolBar'] ['bid'] )
+		+'</td>'    
+		
+		+'<td>'
+		+ element[1] ['HighestVolBar'] ['ask']
+		+'</td>'       
+
+		+'<td>'
+		+ element[1] ['HighestVolBar'] ['bid']
+		+'</td>'        
+		
+		+'<td>'
+		+ element[1] ['HighestVolBar'] ['askBidTotal']
+		+'</td>'        
+		
+		//+'<td>'
+		//+ (dataArray['total_ask'] - element[1]['total_ask'])
+		//+'</td>'        
+		
+		//+'<td>'
+		//+ (dataArray['total_bid'] - element[1]['total_bid'])
+		//+'</td>'    
+		
+		
+		+'</tr>'
+		
+	}
+	
+	tableStr += '<tr>'
+		+'<td>'
+		+ "LTP"
+		+'</td>'
+		+'<td>'
+		+ ltp 
+		+'</td></tr>'        
+		
+	for(var element of prices_below_ltp )
+	{
+
+		var priceRange =  element[1] ['HighestVolBar'] ['priceRange']
+		tableStr += '<tr>'
+		+'<td>'
+		+ element[0]
+		+'</td>'        
+		
+		+'<td>'
+		+ priceRange
+		+'</td>'    
+		
+		+'<td>'
+		//+ element[1] ['delta_candlewise_total_volume_profile_price_obj'] [priceRange] ['cumulative_delta'] 
+		+ ( element[1] ['HighestVolBar'] ['ask'] - element[1] ['HighestVolBar'] ['bid'] )
+		+'</td>'    
+		
+		+'<td>'
+		+ element[1] ['HighestVolBar'] ['ask']
+		+'</td>'       
+
+		+'<td>'
+		+ element[1] ['HighestVolBar'] ['bid']
+		+'</td>'        
+		
+		+'<td>'
+		+ element[1] ['HighestVolBar'] ['askBidTotal']
+		+'</td>'        
+		
+		//+'<td>'
+		//+ (dataArray['total_ask'] - element[1]['total_ask'])
+		//+'</td>'        
+		
+		//+'<td>'
+		//+ (dataArray['total_bid'] - element[1]['total_bid'])
+		//+'</td>'    
+		
+		+'</tr>'
+		
+	}
+	
+	tableStr +='</tbody></table></td>'
+	
++'<td><table>'
 		
 		 +'<thead class="tableRowClass">   <tr>      '
 		+'<th>Time</th>'
@@ -2153,6 +2465,12 @@ console.log(  "highest_ask_bid_orders_whole_candle_wise_obj", highest_ask_bid_or
 		+'<th>CngSell</th>' //bid
 		
 		+' </tr></thead><tbody>'
+			//console.log( "dataArray", dataArray )
+		
+			
+			
+			
+			
 			
 	for(var element of dataArray )
 	{
@@ -2168,7 +2486,8 @@ console.log(  "highest_ask_bid_orders_whole_candle_wise_obj", highest_ask_bid_or
 		+'</td>'    
 		
 		+'<td>'
-		+ element[1] ['delta_candlewise_total_volume_profile_price_obj'] [priceRange] ['cumulative_delta'] 
+		//+ element[1] ['delta_candlewise_total_volume_profile_price_obj'] [priceRange] ['cumulative_delta'] 
+		+ ( element[1] ['HighestVolBar'] ['ask'] - element[1] ['HighestVolBar'] ['bid'] )
 		+'</td>'    
 		
 		+'<td>'
@@ -2239,7 +2558,8 @@ console.log(  "highest_ask_bid_orders_whole_candle_wise_obj", highest_ask_bid_or
  //var sorted_highest_ask_bid_orders_tick_wise_obj  = sortByValueDesc(highest_ask_bid_orders_whole_candle_wise_obj  )
 
 	//for ( var uniquePriceID in sorted_highest_ask_bid_orders_tick_wise_obj ['ask'] ) {
-	for ( var i=0;i< Object.keys(sorted_highest_ask_bid_orders_tick_wise_obj ['ask'] ).length;i++ ) {
+	//for ( var i=0;i< Object.keys(sorted_highest_ask_bid_orders_tick_wise_obj ['ask'] ).length;i++ ) {
+	for ( var i=0;i< 20;i++ ) {
 	
 	var uniquePriceID_ask = Object.keys(sorted_highest_ask_bid_orders_tick_wise_obj ['ask'] )[i]
 	var uniquePriceID_bid = Object.keys(sorted_highest_ask_bid_orders_tick_wise_obj ['bid'] )[i]
@@ -2276,7 +2596,7 @@ console.log(  "highest_ask_bid_orders_whole_candle_wise_obj", highest_ask_bid_or
 	
 	
 	
-	// await addEventListnerInTables()
+	 //await addEventListnerInTables()
 }	//	show_spurts_in_oi_underlyings_Data() Function ENDS HERE
 
 
