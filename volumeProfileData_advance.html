@@ -1919,10 +1919,11 @@ function formatDateTime(timestamp) {
 				}
 				
 				var sorted_total_volume_profile_price_obj = sortByVolumeSumDescending( total_volume_profile_price_obj )
-				
+				//console.log("sorted_total_volume_profile_price_obj", sorted_total_volume_profile_price_obj )
 				candlewise_highest_vol_price_obj2 [candleTime] ['total_ask'] = total_ask_bid['ask']
 				candlewise_highest_vol_price_obj2 [candleTime] ['total_bid'] = total_ask_bid['bid']
 				candlewise_highest_vol_price_obj2 [candleTime] ['poc'] = sorted_total_volume_profile_price_obj[0]
+				candlewise_highest_vol_price_obj2 [candleTime] ['sorted_total_volume_profile_prices'] = sorted_total_volume_profile_price_obj
 				candlewise_highest_vol_price_obj2 [candleTime] ['cumulative_delta'] = cumulative_delta
 				candlewise_highest_vol_price_obj2 [candleTime] ['overall_delta'] = overall_delta
 				candlewise_highest_vol_price_obj2 [candleTime] ['ask_bid_spread'] = ask_bid_spread
@@ -2310,6 +2311,7 @@ console.log(  "delta_candlewise_total_volume_profile_price_obj", delta_candlewis
 	
 	+' <th>Data</th>'
 	+' <th>Data2</th>'
+	+' <th>POC Data</th>'
 	
 	+' </tr></thead><tbody>'
 	var tableStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="perticularStockMarketDepthOrderBookTableStr2"><caption style="caption-side:top"> Market Depth Orders | '+selectedEquitySymbol+' | '+selectedTradingDate+' | '+'</caption>'+theadStr 
@@ -2509,11 +2511,6 @@ console.log(  "delta_candlewise_total_volume_profile_price_obj", delta_candlewis
 		
 		+' </tr></thead><tbody>'
 			//console.log( "dataArray", dataArray )
-		
-			
-			
-			
-			
 			
 	for(var element of dataArray )
 	{
@@ -2551,6 +2548,64 @@ console.log(  "delta_candlewise_total_volume_profile_price_obj", delta_candlewis
 		
 		+'<td>'
 		+ (dataArray['total_bid'] - element[1]['total_bid'])
+		+'</td>'        
+		
+		+'</tr>'
+		
+	}
+	
+	
+	
+	tableStr +='</tbody></table></td>'
+	
++'<td><table>'
+		
+		 +'<thead class="tableRowClass">   <tr>      '
+
+		+'<th>Price</th>'	//ask
+		+'<th>Delta</th>' //bid
+		+'<th>Buy</th>' //bid
+		+'<th>Sell</th>' //bid
+		+'<th>Tot</th>' //bid
+	
+		+' </tr></thead><tbody>'
+			//console.log( "dataArray", dataArray )
+			var temp_counter = 0
+			
+				tableStr += '<tr>'
+	
+		+'<td>'
+		+ candleTime2
+		+'</td><tr>'    
+		
+	for(var element of dataArray["sorted_total_volume_profile_prices"] )
+	{
+	
+		temp_counter += 1
+		if( temp_counter>10 )
+			break
+	
+		var priceRange =  element[0] 
+		tableStr += '<tr>'
+		+'<td>'
+		+ priceRange
+		+'</td>'    
+		
+		+'<td>'
+		//+ element[1] ['delta_candlewise_total_volume_profile_price_obj'] [priceRange] ['cumulative_delta'] 
+		+ ( element[1][0] - element[1] [1] )
+		+'</td>'    
+		
+		+'<td>'
+		+ element[1] [0]
+		+'</td>'       
+
+		+'<td>'
+		+ element[1] [1]
+		+'</td>'        
+		
+		+'<td>'
+		+ ( element[1] [0] + element[1] [1] )
 		+'</td>'        
 		
 		+'</tr>'
