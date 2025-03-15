@@ -1859,6 +1859,7 @@ function formatDateTime(timestamp) {
 				var current_candle_HighestVolBar = sortByVolumeSumDescending( single_candle_volume_profile_price_obj )[0]
 				//candlewise_highest_vol_price_obj[candleTime] = current_candle_HighestVolBar
 				
+				if(false)
 				{
 					// this code block keeps tracks of number of taps of candles/prices on HighestVolBar
 					for( var cTime in candlewise_highest_vol_price_obj )
@@ -2032,6 +2033,7 @@ console.log(  "delta_candlewise_total_volume_profile_price_obj", delta_candlewis
 	
 	+' <th>Data</th>'
 	+' <th>Data2</th>'
+	+' <th>POC Data</th>'
 	
 	+' </tr></thead><tbody>'
 	var tableStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="perticularStockMarketDepthOrderBookTableStr"><caption style="caption-side:top"> Market Depth Orders | '+selectedEquitySymbol+' | '+selectedTradingDate+' | '+'</caption>'+theadStr 
@@ -2282,9 +2284,68 @@ console.log(  "delta_candlewise_total_volume_profile_price_obj", delta_candlewis
 	
 	
 	
-	tableStr +='</tbody></table></td></tr>'
+	//tableStr +='</tbody></table></td></tr>'
 
 		
+	
+	tableStr +='</tbody></table></td>'
+	
++'<td><table>'
+		
+		 +'<thead class="tableRowClass">   <tr>      '
+
+		+'<th>Price</th>'	//ask
+		+'<th>Delta</th>' //bid
+		+'<th>Buy</th>' //bid
+		+'<th>Sell</th>' //bid
+		+'<th>Tot</th>' //bid
+	
+		+' </tr></thead><tbody>'
+			//console.log( "dataArray", dataArray )
+			var temp_counter = 0
+			
+				tableStr += '<tr>'
+	
+		+'<td>'
+		+ candleTime2
+		+'</td><tr>'    
+		
+	for(var element of dataArray["sorted_total_volume_profile_prices"] )
+	{
+	
+		temp_counter += 1
+		if( temp_counter>10 )
+			break
+	
+		var priceRange =  element[0] 
+		tableStr += '<tr>'
+		+'<td>'
+		+ priceRange
+		+'</td>'    
+		
+		+'<td>'
+		//+ element[1] ['delta_candlewise_total_volume_profile_price_obj'] [priceRange] ['cumulative_delta'] 
+		+ ( element[1][0] - element[1] [1] )
+		+'</td>'    
+		
+		+'<td>'
+		+ element[1] [0]
+		+'</td>'       
+
+		+'<td>'
+		+ element[1] [1]
+		+'</td>'        
+		
+		+'<td>'
+		+ ( element[1] [0] + element[1] [1] )
+		+'</td>'        
+		
+		+'</tr>'
+		
+	}
+	
+	tableStr +='</tbody></table></td></tr>'
+
 		
 	}
 	
