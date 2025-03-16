@@ -3023,17 +3023,19 @@ function showOptionChainTotalOIChart ( chartID, candleTime ) {
 		// dataPointWidth: 15,
 		data: [
 		{
-			//indexLabel: "{y}",
-			indexLabelFontSize:12,
-
+			indexLabel: "{x}",
+			indexLabelFontSize: 10,
+			indexLabelPlacement: "outside",    // “outside”, “inside”, “auto”
 			type: "bar", //change type to column, bar, line, area, pie, etc
 			color: "#cc5f5f",
 			dataPoints: arrObjCE // CE
 		},
           {
 			//indexLabel: "{y}",
-			indexLabelFontSize: 12,
-			
+			indexLabel: "{x}",
+			//indexLabelFontSize: 12,
+			indexLabelFontSize: 10,
+			indexLabelPlacement: "outside",    // “outside”, “inside”, “auto”
 			type: "bar",  //change type to column, bar, line, area, pie, etc    
 			color: "#1e9b87",
 			dataPoints: arrObjPE //PE
