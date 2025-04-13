@@ -1586,8 +1586,15 @@ async function showPerticularStocksEquityDataInTable()
 	+' <th>BuyChng</th>'
 	+' <th>SellChng</th>'
 	+' <th>C%_1m</th>'
-	+' <th>Buy%</th>'
-	+' <th>Sell%</th>'
+	
+	+' <th>Score_1m</th>'
+	+' <th>Candles_1m</th>'
+	+' <th>bodyWick_1m</th>'
+	+' <th>bodyPer_1m</th>'
+	+' <th>Score_5m</th>'
+	+' <th>Candles_5m</th>'
+	+' <th>bodyWick_5m</th>'
+	+' <th>bodyPer_5m</th>'
 
 	
 	//+'<th>Ratio%</th>   '
@@ -1669,6 +1676,34 @@ async function showPerticularStocksEquityDataInTable()
 		+'</td><td>'
 		+ ( pChange_total_1m )
 		
+		if( dataObj['score_result_1m'] != undefined )
+		{
+		tablesStr += 
+		'</td><td>'
+		+ dataObj['score_result_1m']['score']
+		
+		+'</td><td>'
+		+ dataObj['score_result_1m']['num_consec']
+		
+		+'</td><td>'
+		+ dataObj['score_result_1m']['body_wick']
+		
+		+'</td><td>'
+		+ dataObj['score_result_1m']['body_per']
+		
+		+'</td><td>'
+		+ dataObj['score_result_5m']['score']
+		
+		+'</td><td>'
+		+ dataObj['score_result_5m']['num_consec']
+		
+		+'</td><td>'
+		+ dataObj['score_result_5m']['body_wick']
+		
+		+'</td><td>'
+		+ dataObj['score_result_5m']['body_per']
+		}
+				
 		/*
 		+'</td><td>'
 		+ dataObj['marketDeptOrderBook']['totalBuyQuantity'] 
