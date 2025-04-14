@@ -1676,9 +1676,10 @@ async function showPerticularStocksEquityDataInTable()
 		+ dataObj['score_result_1m']['body_per']
 		
 		+'</td><td>'
-		+ dataObj['score_result_1m']['analyzed_candles']['max_consecutive_bullish']
+		//+ dataObj['score_result_1m']['analyzed_candles']['max_consecutive_bullish']
+		+ dataObj['score_result_1m']['analyzed_candles']['max_valid_consecutive_bullish']
 		+'</td><td>'
-		+ dataObj['score_result_1m']['analyzed_candles']['max_consecutive_bearish']
+		+ dataObj['score_result_1m']['analyzed_candles']['max_valid_consecutive_bearish']
 		
 		
 		+'</td><td>'
@@ -1694,9 +1695,9 @@ async function showPerticularStocksEquityDataInTable()
 		+ dataObj['score_result_5m']['body_per']
 		
 		+'</td><td>'
-		+ dataObj['score_result_5m']['analyzed_candles']['max_consecutive_bullish']
+		+ dataObj['score_result_5m']['analyzed_candles']['max_valid_consecutive_bullish']
 		+'</td><td>'
-		+ dataObj['score_result_5m']['analyzed_candles']['max_consecutive_bearish']
+		+ dataObj['score_result_5m']['analyzed_candles']['max_valid_consecutive_bearish']
 		+'</td><td>'
 		}	
 	
