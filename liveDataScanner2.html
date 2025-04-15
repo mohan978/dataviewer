@@ -1664,7 +1664,8 @@ async function showPerticularStocksEquityDataInTable()
 		{
 		tablesStr += 
 		'</td><td>'
-		+ dataObj['score_result_1m']['score']
+		//+ dataObj['score_result_1m']['score']
+		+ ( dataObj['score_result_1m']['num_consec'] * dataObj['score_result_1m']['body_per'] ).toFixed(2)
 		
 		+'</td><td>'
 		+ dataObj['score_result_1m']['num_consec']
@@ -1683,7 +1684,8 @@ async function showPerticularStocksEquityDataInTable()
 		
 		
 		+'</td><td>'
-		+ dataObj['score_result_5m']['score']
+		//+ dataObj['score_result_5m']['score']
+		+ ( dataObj['score_result_5m']['num_consec'] * dataObj['score_result_5m']['body_per'] ).toFixed(2)
 		
 		+'</td><td>'
 		+ dataObj['score_result_5m']['num_consec']
