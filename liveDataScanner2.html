@@ -112,7 +112,7 @@ th, td {
 
 
  <label> | Common TimeValues:</label>
-<select id="commonTimeValues" onchange="saveSelectedValues();showPerticularStocksEquityDataInTable()">
+<select id="commonTimeValues" onchange="saveSelectedValues();showLiveScannerAllStocksDataInTable()">
 </select>
 
 &nbsp; | &nbsp;&nbsp;
@@ -154,6 +154,7 @@ th, td {
  <button onclick="showPerticularStocksEquityDataInTable()">GO</button>
  </span>
 <div class="spaceBetweenTables">  	<div id="perticularEquityTableContainer"></div> </div>
+<div class="spaceBetweenTables">  	<div id="volumeProfile_EquityTableContainer"></div> </div>
 <div class="spaceBetweenTables">  	<div id="perticularEquityTableContainer2"></div> </div>
 </center>
 
@@ -1523,7 +1524,7 @@ async function showSecurityWiseDeliveryPerStocks( selectedSpurtsTimeValue, selec
 }	//	show_spurts_in_oi_underlyings_Data() Function ENDS HERE
 
 
-async function showPerticularStocksEquityDataInTable()
+async function showLiveScannerAllStocksDataInTable()
 {
 	 document.getElementById('perticularEquityTableContainer').innerHTML = "";
 	 /*
@@ -1576,15 +1577,15 @@ async function showPerticularStocksEquityDataInTable()
 	
 	
 	+' <th>Score_1m</th>'
-	+' <th>Candles_1m</th>'
-	+' <th>bodyWick_1m</th>'
-	+' <th>bodyPer_1m</th>'
+	+' <th>Candles</th>'
+	//+' <th>bodyWick_1m</th>'
+	+' <th>bodyPer</th>'
 	+' <th>bullish</th>'
 	+' <th>bearish</th>'
 	+' <th>Score_5m</th>'
-	+' <th>Candles_5m</th>'
-	+' <th>bodyWick_5m</th>'
-	+' <th>bodyPer_5m</th>'
+	+' <th>Candles</th>'
+	//+' <th>bodyWick_5m</th>'
+	+' <th>bodyPer</th>'
 	+' <th>bullish</th>'
 	+' <th>bearish</th>'
 
@@ -1670,8 +1671,8 @@ async function showPerticularStocksEquityDataInTable()
 		+'</td><td>'
 		+ dataObj['score_result_1m']['num_consec']
 		
-		+'</td><td>'
-		+ dataObj['score_result_1m']['body_wick']
+		//+'</td><td>'
+		//+ dataObj['score_result_1m']['body_wick']
 		
 		+'</td><td>'
 		+ dataObj['score_result_1m']['body_per']
@@ -1690,8 +1691,8 @@ async function showPerticularStocksEquityDataInTable()
 		+'</td><td>'
 		+ dataObj['score_result_5m']['num_consec']
 		
-		+'</td><td>'
-		+ dataObj['score_result_5m']['body_wick']
+		//+'</td><td>'
+		//+ dataObj['score_result_5m']['body_wick']
 		
 		+'</td><td>'
 		+ dataObj['score_result_5m']['body_per']
@@ -1776,9 +1777,9 @@ async function showPerticularStocksEquityDataInTable()
 }	//	show_spurts_in_oi_underlyings_Data() Function ENDS HERE
 
 
-async function showPerticularStocksEquityDataInTable_previous()
+async function showPerticularStocksEquityDataInTable()
 {
-	 document.getElementById('perticularEquityTableContainer').innerHTML = "";
+	 document.getElementById('volumeProfile_EquityTableContainer').innerHTML = "";
 	 /*
 	 var selectedDeliveryStockSymbol = document.getElementById("deliveryStockSymbol").value
 	var selectedMonthYear = document.getElementById('monthYear').value
@@ -2079,7 +2080,7 @@ console.log(  "sorted_total_volume_profile_price_obj", sorted_total_volume_profi
 	tableStr +=' </tbody> </table>    </div>  </div>'
 	//optOILosersTablesStr +=' </tbody> </table>    </div>  </div>'
 	
-	 document.getElementById('perticularEquityTableContainer').innerHTML = tableStr;
+	 document.getElementById('volumeProfile_EquityTableContainer').innerHTML = tableStr;
 	 //document.getElementById('allSpurtsUnderlyingsColumnsContainer').innerHTML += tablesStrForNegative;
 	 
 	
@@ -3490,7 +3491,7 @@ var functionStr ="addOnclickEvent();" + tableHead[j].getAttribute('onclick')
 }
 else
 {
-var functionStr = "document.getElementById('derivativesSymbols').value ='"+tableData.innerHTML+"';showPerticularStocksEquityDataInTable();document.getElementById('derivativesSymbols').scrollIntoView();"
+var functionStr = "document.getElementById('derivativesSymbols').value ='"+tableData.innerHTML+"';showPerticularStocksEquityDataInTable();document.getElementById('volumeProfile_EquityTableContainer').scrollIntoView();"
 tableData.setAttribute('onclick', functionStr)
 }
 }
