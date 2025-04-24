@@ -1582,12 +1582,17 @@ async function showLiveScannerAllStocksDataInTable()
 	+' <th>bodyPer</th>'
 	+' <th>bullish</th>'
 	+' <th>bearish</th>'
+	+' <th>retracement</th>'
+	+' <th>pullback</th>'
+	
 	+' <th>Score_5m</th>'
 	+' <th>Candles</th>'
 	//+' <th>bodyWick_5m</th>'
 	+' <th>bodyPer</th>'
 	+' <th>bullish</th>'
 	+' <th>bearish</th>'
+	+' <th>retracement</th>'
+	+' <th>pullback</th>'
 
 	
 	+'<th>Ratio</th>'
@@ -1683,6 +1688,12 @@ async function showLiveScannerAllStocksDataInTable()
 		+'</td><td>'
 		+ dataObj['score_result_1m']['analyzed_candles']['max_valid_consecutive_bearish']
 		
+		+'</td><td>'
+		+ dataObj['score_result_1m']['retracement']
+		
+		+'</td><td>'
+		+ dataObj['score_result_1m']['pullback_depth']
+		
 		
 		+'</td><td>'
 		//+ dataObj['score_result_5m']['score']
@@ -1701,6 +1712,15 @@ async function showLiveScannerAllStocksDataInTable()
 		+ dataObj['score_result_5m']['analyzed_candles']['max_valid_consecutive_bullish']
 		+'</td><td>'
 		+ dataObj['score_result_5m']['analyzed_candles']['max_valid_consecutive_bearish']
+		
+		
+		+'</td><td>'
+		+ dataObj['score_result_5m']['retracement']
+		
+		+'</td><td>'
+		+ dataObj['score_result_5m']['pullback_depth']
+		
+		
 		+'</td><td>'
 		}	
 	
@@ -1850,7 +1870,7 @@ function formatDateTime(timestamp) {
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
-	
+	var previous_tick_price = 0
 	var currentDayData = candleWiseDataObj
 	//console.log("currentDayData", currentDayData)
 	
@@ -1888,7 +1908,8 @@ function formatDateTime(timestamp) {
 					total_ask_bid['ask'] += ask
 					total_ask_bid['bid'] += bid
 					//var priceRange = priceLow +'-'+ priceHigh
-					var priceRange = priceLow 
+					//var priceRange = priceLow 
+					var priceRange = previous_tick_price +'-'+ priceLow 
 					
 					if(single_candle_volume_profile_price_obj[priceRange] ==undefined )
 					{
@@ -1907,7 +1928,8 @@ function formatDateTime(timestamp) {
 					{
 						total_volume_profile_price_obj[priceRange] = [ total_volume_profile_price_obj[priceRange][0] + ask, total_volume_profile_price_obj[priceRange] [1] + bid ]
 					}
-				
+					
+					previous_tick_price = priceLow
 				}
 				
 				
