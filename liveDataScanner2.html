@@ -156,6 +156,8 @@ th, td {
 <div class="spaceBetweenTables">  	<div id="perticularEquityTableContainer"></div> </div>
 <div class="spaceBetweenTables">  	<div id="volumeProfile_EquityTableContainer"></div> </div>
 <div class="spaceBetweenTables">  	<div id="perticularEquityTableContainer2"></div> </div>
+
+<div class="spaceBetweenTables">  	<div id="highest_ask_bid_orders_tick_wise_TableContainer"></div> </div>
 </center>
 
 
@@ -1574,25 +1576,32 @@ async function showLiveScannerAllStocksDataInTable()
 	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
 	var theadStr = '<thead class="tableRowClass">   <tr>      '
 	+'<th>Symbol</th>'
+	 
 	
-	
+	+' <th>c%</th>'
 	+' <th>Score_1m</th>'
 	+' <th>Candles</th>'
 	//+' <th>bodyWick_1m</th>'
 	+' <th>bodyPer</th>'
 	+' <th>bullish</th>'
 	+' <th>bearish</th>'
-	+' <th>retracement</th>'
-	+' <th>pullback</th>'
+	//+' <th>retracement</th>'
+	//+' <th>pullback</th>'
 	
+	+' <th>bullish%</th>'
+	+' <th>bearish%</th>'
+
 	+' <th>Score_5m</th>'
 	+' <th>Candles</th>'
 	//+' <th>bodyWick_5m</th>'
 	+' <th>bodyPer</th>'
 	+' <th>bullish</th>'
 	+' <th>bearish</th>'
-	+' <th>retracement</th>'
-	+' <th>pullback</th>'
+	//+' <th>retracement</th>'
+	//+' <th>pullback</th>'
+	
+	+' <th>bullish%</th>'
+	+' <th>bearish%</th>'
 
 	
 	+'<th>Ratio</th>'
@@ -1661,6 +1670,8 @@ async function showLiveScannerAllStocksDataInTable()
 			whoIsMoreAggressive = 'Sell'
 			ratioPercentage = dataObj['total_bid'] / dataObj['total_ask']
 		}
+		
+		var percentageChange = ( ( ( dataObj['LTP'] - dataObj['day_open'] ) / dataObj['day_open'] ) * 100 )
 
 		var tablesStr = '<tr class="item"><td>'
 		+ symbol
@@ -1671,7 +1682,13 @@ async function showLiveScannerAllStocksDataInTable()
 		tablesStr += 
 		'</td><td>'
 		//+ dataObj['score_result_1m']['score']
-		+ ( dataObj['score_result_1m']['num_consec'] * dataObj['score_result_1m']['body_per'] ).toFixed(2)
+		+ percentageChange.toFixed(2)
+		 
+		+'</td><td>'
+		//+ dataObj['score_result_1m']['score']
+		//+ ( dataObj['score_result_1m']['num_consec'] * dataObj['score_result_1m']['body_per'] ).toFixed(2)
+		//+ Math.abs( percentageChange * dataObj['score_result_1m']['num_consec'] * dataObj['score_result_1m']['body_per']  ).toFixed(2)
+		+ Math.abs( percentageChange * dataObj['score_result_1m']['num_consec'] ).toFixed(2)
 		
 		+'</td><td>'
 		+ dataObj['score_result_1m']['num_consec']
@@ -1689,15 +1706,21 @@ async function showLiveScannerAllStocksDataInTable()
 		+ dataObj['score_result_1m']['analyzed_candles']['max_valid_consecutive_bearish']
 		
 		+'</td><td>'
-		+ dataObj['score_result_1m']['retracement']
+		//+ dataObj['score_result_1m']['retracement']
+		+Math.abs( percentageChange * dataObj['score_result_1m']['analyzed_candles']['max_valid_consecutive_bullish'] ).toFixed(2)
 		
 		+'</td><td>'
-		+ dataObj['score_result_1m']['pullback_depth']
+		//+ dataObj['score_result_1m']['pullback_depth']
+		+Math.abs( percentageChange * dataObj['score_result_1m']['analyzed_candles']['max_valid_consecutive_bearish'] ).toFixed(2)
+		
 		
 		
 		+'</td><td>'
 		//+ dataObj['score_result_5m']['score']
-		+ ( dataObj['score_result_5m']['num_consec'] * dataObj['score_result_5m']['body_per'] ).toFixed(2)
+		//+ ( dataObj['score_result_5m']['num_consec'] * dataObj['score_result_5m']['body_per'] ).toFixed(2)
+		//+Math.abs( percentageChange  * dataObj['score_result_5m']['num_consec'] * dataObj['score_result_5m']['body_per']   ).toFixed(2)
+		+Math.abs( percentageChange  * dataObj['score_result_5m']['num_consec'] ).toFixed(2)
+		
 		
 		+'</td><td>'
 		+ dataObj['score_result_5m']['num_consec']
@@ -1715,10 +1738,12 @@ async function showLiveScannerAllStocksDataInTable()
 		
 		
 		+'</td><td>'
-		+ dataObj['score_result_5m']['retracement']
+		//+ dataObj['score_result_5m']['retracement']
+		+Math.abs( percentageChange * dataObj['score_result_5m']['analyzed_candles']['max_valid_consecutive_bullish'] ).toFixed(2)
 		
 		+'</td><td>'
-		+ dataObj['score_result_5m']['pullback_depth']
+		//+ dataObj['score_result_5m']['pullback_depth']
+		+Math.abs( percentageChange  * dataObj['score_result_5m']['analyzed_candles']['max_valid_consecutive_bearish'] ).toFixed(2)
 		
 		
 		+'</td><td>'
@@ -1877,6 +1902,12 @@ function formatDateTime(timestamp) {
 	var highest_vol_price_arr = []
 	var candlewise_highest_vol_price_obj = {}
 	var candlewise_highest_vol_price_obj2 = {}
+	
+	
+	var highest_ask_bid_orders_tick_wise_obj = {	ask:{},	bid:{},	}
+	var highest_ask_bid_orders_whole_candle_wise_obj = {	ask:{},	bid:{},	}
+	
+	
 	for( var i=0;i<Object.keys(currentDayData).length;i++ ){
 	//for( var i=0;i<2;i++ ){
 		var c = Object.keys(currentDayData)[i]
@@ -1900,7 +1931,8 @@ function formatDateTime(timestamp) {
 				for( var tick of hhists_data_array )
 				{
 					
-
+					var tick_id = tick['id']
+					
 					var priceHigh = tick['priceHigh'].toFixed(2)
 					var priceLow = tick['priceLow'].toFixed(2)
 					var ask = tick['rate'][0]
@@ -1928,6 +1960,37 @@ function formatDateTime(timestamp) {
 					{
 						total_volume_profile_price_obj[priceRange] = [ total_volume_profile_price_obj[priceRange][0] + ask, total_volume_profile_price_obj[priceRange] [1] + bid ]
 					}
+					
+					
+					
+					var uniquePriceID = priceRange +'_'+candleTime + '_'+ tick_id 
+					
+					highest_ask_bid_orders_tick_wise_obj ['ask'] [ uniquePriceID ] = ask
+					highest_ask_bid_orders_tick_wise_obj ['bid'] [ uniquePriceID ] = bid
+		
+					var uniquePriceID = priceRange +'_'+candleTime 
+					
+					//highest_ask_bid_orders_whole_candle_wise_obj ['ask'] [ uniquePriceID ] = ask
+					//highest_ask_bid_orders_whole_candle_wise_obj ['bid'] [ uniquePriceID ] = bid
+					if( highest_ask_bid_orders_whole_candle_wise_obj ['ask'] [ uniquePriceID ] ==undefined )
+					{
+						highest_ask_bid_orders_whole_candle_wise_obj ['ask'] [ uniquePriceID ] = ask
+					}
+					else
+					{
+						highest_ask_bid_orders_whole_candle_wise_obj ['ask'] [ uniquePriceID ] += ask
+					}
+		
+					if( highest_ask_bid_orders_whole_candle_wise_obj ['bid'] [ uniquePriceID ] ==undefined )
+					{
+						highest_ask_bid_orders_whole_candle_wise_obj ['bid'] [ uniquePriceID ] = bid
+					}
+					else
+					{
+						highest_ask_bid_orders_whole_candle_wise_obj ['bid'] [ uniquePriceID ] += bid
+					}
+		
+	
 					
 					previous_tick_price = priceLow
 				}
@@ -2163,6 +2226,10 @@ console.log(  "sorted_total_volume_profile_price_obj", sorted_total_volume_profi
 		+'</td>'    
 		
 		+'<td>'
+		+ ( Number( element[1][0].split('-')[1] ) - Number( element[1][0].split('-')[0] ) ).toFixed(2)
+		+'</td>'    
+				
+		+'<td>'
 		+ element[1][1][0]
 		+'</td>'       
 
@@ -2191,9 +2258,85 @@ console.log(  "sorted_total_volume_profile_price_obj", sorted_total_volume_profi
 	 //document.getElementById('allSpurtsUnderlyingsColumnsContainer').innerHTML += tablesStrForNegative;
 	 
 	
+	var theadStr = '<thead class="tableRowClass">   <tr>      '
+	+'<th>Buy Price</th>'
+	+'<th>Buy Quantity</th>'	//ask
+	+'<th>Sell Price</th>' //bid
+	+'<th>Sell Quantity</th>' //bid
 	
 	
-	// await addEventListnerInTables()
+	+' </tr></thead><tbody>'
+	var tableStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="highest_ask_bid_orders_tick_wise_TableStr"><caption style="caption-side:top"> Market Depth Orders | '+selectedEquitySymbol+' | '+selectedTradingDate+' | '+'</caption>'+theadStr 
+	//var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	
+
+	function sortByValueDesc(data) {
+    const sortDescending = (obj) => {
+        return Object.fromEntries(
+            Object.entries(obj)
+                .sort(([, valueA], [, valueB]) => valueB - valueA)
+        );
+    };
+
+    return {
+        ask: sortDescending(data.ask),
+        bid: sortDescending(data.bid)
+    };
+}
+
+
+ var sorted_highest_ask_bid_orders_tick_wise_obj  = sortByValueDesc(highest_ask_bid_orders_tick_wise_obj )
+ //var sorted_highest_ask_bid_orders_tick_wise_obj  = sortByValueDesc(highest_ask_bid_orders_whole_candle_wise_obj  )
+
+	//for ( var uniquePriceID in sorted_highest_ask_bid_orders_tick_wise_obj ['ask'] ) {
+	//for ( var i=0;i< Object.keys(sorted_highest_ask_bid_orders_tick_wise_obj ['ask'] ).length;i++ ) {
+	for ( var i=0;i< 20;i++ ) {
+	
+	var uniquePriceID_ask = Object.keys(sorted_highest_ask_bid_orders_tick_wise_obj ['ask'] )[i]
+	var uniquePriceID_bid = Object.keys(sorted_highest_ask_bid_orders_tick_wise_obj ['bid'] )[i]
+	
+	var quantity_ask = sorted_highest_ask_bid_orders_tick_wise_obj ['ask'] [ uniquePriceID_ask ]
+	var quantity_bid = sorted_highest_ask_bid_orders_tick_wise_obj ['bid'] [ uniquePriceID_bid ]
+	
+	
+	tableStr += '<tr class="item"><td>'
+		//+ timeStampPrevious1+'-'+timeStamp
+		+ uniquePriceID_ask
+		+'</td><td>'
+				
+		//+'</td><td>'
+		+ ( Number( uniquePriceID_ask.split('-')[1].split('_')[0] ) - Number( uniquePriceID_ask.split('-')[0] ) ).toFixed(2)
+		+'</td><td>'
+		
+		+ quantity_ask
+		+'</td><td>'
+		+ uniquePriceID_bid
+		
+		+'</td><td>'
+		+ ( Number( uniquePriceID_bid.split('-')[1].split('_')[0]  ) - Number( uniquePriceID_bid.split('-')[0] ) ).toFixed(2)
+		//+'</td><td>'
+		
+		+'</td><td>'
+		+ quantity_bid
+		
+		//+ timeStampOfData
+		+'</td>'
+		
+	tableStr +='</tr>'
+
+		
+		
+	}
+	
+	tableStr +=' </tbody> </table>    </div>  </div>'
+	//optOILosersTablesStr +=' </tbody> </table>    </div>  </div>'
+	
+	 document.getElementById('highest_ask_bid_orders_tick_wise_TableContainer').innerHTML = tableStr;
+	 //document.getElementById('allSpurtsUnderlyingsColumnsContainer').innerHTML += tablesStrForNegative;
+	 
+	
+	
+	 await addEventListnerInTables()
 }	//	show_spurts_in_oi_underlyings_Data() Function ENDS HERE
 
 
