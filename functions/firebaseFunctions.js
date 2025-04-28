@@ -714,8 +714,8 @@ function refreshOrLiveFirebaseData(passedValue)
 	document.getElementById('monthYear').value = savedSelectedValues["selectedMonthYear"]
 	document.getElementById('tradingDate').value = savedSelectedValues["selectedTradingDate"]
 	
-	//setCommonSelectors()
-	//document.getElementById('commonTimeValues').value = savedSelectedValues["selectedCommonTimeValues"]
+	setCommonSelectors()
+	document.getElementById('commonTimeValues').value = savedSelectedValues["selectedCommonTimeValues"]
 	
 	  }
 	  

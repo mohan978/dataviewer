@@ -5,11 +5,11 @@ function saveSelectedValues()
 
 	var selectedMonthYear = document.getElementById('monthYear').value
 	var selectedTradingDate = document.getElementById('tradingDate').value
-	//var selectedCommonTimeValues = document.getElementById('commonTimeValues').value
+	var selectedCommonTimeValues = document.getElementById('commonTimeValues').value
 	var selectedValuesObj = {
 	"selectedMonthYear":selectedMonthYear,
 	"selectedTradingDate": selectedTradingDate,
-	//"selectedCommonTimeValues":selectedCommonTimeValues,
+	"selectedCommonTimeValues":selectedCommonTimeValues,
 	}
 	
 	//console.log( "saving seletced values",selectedValuesObj  )
