@@ -153,10 +153,8 @@ th, td {
 	| Minutes: 		 <input id="differenceBetweenEntries" type="number" value="1"  size="3">
  <button onclick="showPerticularStocksEquityDataInTable()">GO</button>
  </span>
-<div class="spaceBetweenTables">  	<div id="perticularEquityTableContainer"></div> </div>
-<div class="spaceBetweenTables">  	<div id="perticularEquityTableContainer2"></div> </div>
-</center>
-
+ </center>
+ 
 
 
 <!-- Slider's Scripts STARTS from HERE -->
@@ -383,7 +381,15 @@ width: 98%;
   
   
  <div class="spaceBetweenTables">  	<div id="candleWiseDataTableContainer"></div> </div>
+ <div class="spaceBetweenTables">  	<div id="priceRangesDataTableContainer"></div> </div>
   
+  <br><br>
+ 
+ <center>
+<div class="spaceBetweenTables">  	<div id="perticularEquityTableContainer"></div> </div>
+<div class="spaceBetweenTables">  	<div id="perticularEquityTableContainer2"></div> </div>
+</center>
+
   
 <div class="row">
   <div class="column Left" style="background-color:#aaa;">
@@ -2721,6 +2727,7 @@ function formatDateTime(timestamp) {
 	
 	var data_object_for_slider = {}
 	var previous_tick_price = 0
+	var price_ranges_data_obj = {}
 
 	
 	var theadStr = '<thead class="tableRowClass">   <tr>      '
@@ -2765,6 +2772,7 @@ function formatDateTime(timestamp) {
 			//console.log(currentDayData[c]['graphicsCmds']['create']['hhists'][0]['data'])
 			if( currentDayData[c]['graphicsCmds']['create'] !=undefined )
 			{
+				
 				var hhists_data_array = currentDayData[c]['graphicsCmds']['create']['hhists'][0]['data']
 				var single_candle_volume_profile_price_obj = {}
 				var single_candle_highest_ask_bid_prices_obj = {
@@ -2786,15 +2794,31 @@ function formatDateTime(timestamp) {
 				{
 
 
+					var tick_id = tick['id']
+					
 					var priceHigh = tick['priceHigh'].toFixed(2)
 					var priceLow = tick['priceLow'].toFixed(2)
 					var ask = tick['rate'][0]
 					var bid = tick['rate'][1]
 					total_ask_bid['ask'] += ask
 					total_ask_bid['bid'] += bid
+					
+					if( previous_tick_price==0 )
+					{
+						previous_tick_price = priceLow
+					}
+					
 					//var priceRange = priceLow +'-'+ priceHigh
 					//var priceRange = priceLow 
 					var priceRange = previous_tick_price +'-'+ priceLow 
+					
+					 var tick_difference = Math.abs( ( Number( priceRange.split('-')[1] ) - Number( priceRange.split('-')[0] ) ).toFixed(2) )
+					price_ranges_data_obj [ tick_difference+'_'+candleTime+'_'+tick_id ] = {
+						'candleTime' :candleTime,
+						'ask' :ask,
+						'bid' :bid,
+						'priceRange' :priceRange 
+					}
 					
 					if( ask >= highest_ask )
 					{
@@ -2861,6 +2885,8 @@ function formatDateTime(timestamp) {
 				
 				
 				//console.log( "single_candle_highest_ask_bid_prices_obj", single_candle_highest_ask_bid_prices_obj )
+				//console.log( "price_ranges_data_obj", price_ranges_data_obj )
+						
 				
 				var reversedAsk = single_candle_highest_ask_bid_prices_obj.ask.reverse();
 				var reversedBid = single_candle_highest_ask_bid_prices_obj.bid.reverse();
@@ -2886,7 +2912,7 @@ function formatDateTime(timestamp) {
 						+'</td>'        
 						
 						+'<td>'
-						+ + ( Number( ask_priceRange.split('-')[1] ) - Number( ask_priceRange.split('-')[0] ) ).toFixed(2)
+						+  ( Number( ask_priceRange.split('-')[1] ) - Number( ask_priceRange.split('-')[0] ) ).toFixed(2)
 						+'</td>'        
 						
 						+'<td>'
@@ -2898,7 +2924,7 @@ function formatDateTime(timestamp) {
 						+'</td>'        
 						
 						+'<td>'
-						+ + ( Number( bid_priceRange.split('-')[1] ) - Number( bid_priceRange.split('-')[0] ) ).toFixed(2)
+						+ ( Number( bid_priceRange.split('-')[1] ) - Number( bid_priceRange.split('-')[0] ) ).toFixed(2)
 						+'</td>'        
 						
 						+'<td>'
@@ -3148,6 +3174,64 @@ function formatDateTime(timestamp) {
 	//optOILosersTablesStr +=' </tbody> </table>    </div>  </div>'
 	
 	 document.getElementById('perticularEquityTableContainer2').innerHTML = tableStr;
+	 //document.getElementById('allSpurtsUnderlyingsColumnsContainer').innerHTML += tablesStrForNegative;
+	 
+
+	const sortedEntries = Object.entries(price_ranges_data_obj).sort((a, b) => {
+	  const aNum = parseFloat(a[0].split('_')[0]);
+	  const bNum = parseFloat(b[0].split('_')[0]);
+	  return bNum - aNum; // reverse order
+	});
+
+	//const sortedData = Object.fromEntries(sortedEntries);
+	price_ranges_data_obj = Object.fromEntries(sortedEntries);
+	//console.log(sortedData);
+	
+	var theadStr = '<thead class="tableRowClass">   <tr>      '
+	+'<th>TickDiff</th>'
+	+'<th>Time</th>'	//ask
+	+'<th>Range</th>' //bid
+	+'<th>Ask</th>' //bid
+	+'<th>Bid</th>' //bid
+	//+' <th>Data</th>'
+	
+	+' </tr></thead><tbody>'
+	var tableStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="priceRangesDataTableStr2"><caption style="caption-side:top"> Price Ranges | '+selectedEquitySymbol+' | '+selectedTradingDate+' | '+'</caption>'+theadStr 
+	//var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	 
+	 var temp_counter = 0
+	for ( var priceRangeStr in price_ranges_data_obj ) {
+	
+	if( temp_counter==50)
+	{break}
+	
+	var dataObj = price_ranges_data_obj[priceRangeStr]
+	var priceRange = dataObj[ 'priceRange' ]
+	var tick_difference = Number( ( Number( priceRange.split('-')[1] ) - Number( priceRange.split('-')[0] ) ).toFixed(2) )
+					
+	
+	
+	tableStr += '<tr class="item"><td>'
+		//+ timeStampPrevious1+'-'+timeStamp
+		+ tick_difference
+		+'</td><td>'
+		+ dataObj['candleTime']
+		+'</td><td>'
+		+ dataObj['priceRange']
+		+'</td><td>'
+		+ dataObj['ask']
+		+'</td><td>'
+		+ dataObj['bid']
+		//+ timeStampOfData
+		+'</td></tr>'
+		
+		temp_counter++
+	}
+	
+	tableStr +=' </tbody> </table>    </div>  </div>'
+	//optOILosersTablesStr +=' </tbody> </table>    </div>  </div>'
+	
+	 document.getElementById('priceRangesDataTableContainer').innerHTML = tableStr;
 	 //document.getElementById('allSpurtsUnderlyingsColumnsContainer').innerHTML += tablesStrForNegative;
 	 
 	
