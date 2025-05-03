@@ -2411,7 +2411,8 @@ async function showPipsInSlider( passed_data_obj ) {
 	console.log("selectedTime", selectedTime);
 
 	// Get time 14 steps before the latest one, if it exists
-	let pre15StempsTimeIndex = optionChainTimeValuesArray.length - 15;
+	//let pre15StempsTimeIndex = optionChainTimeValuesArray.length - 15;
+	let pre15StempsTimeIndex = 0;
 	if (pre15StempsTimeIndex < 0) pre15StempsTimeIndex = 1;  // fallback to second element
 
 	const pre15StempsTime = optionChainTimeValuesArray[pre15StempsTimeIndex];
@@ -2766,6 +2767,13 @@ function formatDateTime(timestamp) {
 			{
 				var hhists_data_array = currentDayData[c]['graphicsCmds']['create']['hhists'][0]['data']
 				var single_candle_volume_profile_price_obj = {}
+				var single_candle_highest_ask_bid_prices_obj = {
+					"ask":[],
+					"bid":[],
+				}
+				var highest_ask = 1
+				var highest_bid = 1
+				
 							
 				tableStr += '<tr class="item"><td>'
 				//+ timeStampPrevious1+'-'+timeStamp
@@ -2788,6 +2796,24 @@ function formatDateTime(timestamp) {
 					//var priceRange = priceLow 
 					var priceRange = previous_tick_price +'-'+ priceLow 
 					
+					if( ask >= highest_ask )
+					{
+						highest_ask = ask
+						single_candle_highest_ask_bid_prices_obj['ask'].push( { 
+						'ask' :ask,
+						'priceRange' :priceRange 
+						} )
+					}
+					
+					if( bid >= highest_bid )
+					{
+						highest_bid = bid
+						single_candle_highest_ask_bid_prices_obj['bid'].push( { 
+						'bid':bid,
+						'priceRange':priceRange
+						} )
+					}
+					
 					if(single_candle_volume_profile_price_obj[priceRange] ==undefined )
 					{
 						single_candle_volume_profile_price_obj[priceRange] = [ ask, bid, ask+bid ]
@@ -2806,7 +2832,7 @@ function formatDateTime(timestamp) {
 						total_volume_profile_price_obj[priceRange] = [ total_volume_profile_price_obj[priceRange][0] + ask, total_volume_profile_price_obj[priceRange] [1] + bid ]
 					}
 					
-					
+					/*
 					tableStr += '<tr>'
 					
 					+'<td>'
@@ -2827,14 +2853,67 @@ function formatDateTime(timestamp) {
 					
 					+'</tr>'
 					
+					*/
 	
 				
 					previous_tick_price = priceLow
 				}
 				
-				tableStr +='</table></td></tr>'
-
 				
+				//console.log( "single_candle_highest_ask_bid_prices_obj", single_candle_highest_ask_bid_prices_obj )
+				
+				var reversedAsk = single_candle_highest_ask_bid_prices_obj.ask.reverse();
+				var reversedBid = single_candle_highest_ask_bid_prices_obj.bid.reverse();
+
+				//console.log("Reversed Ask:", reversedAsk);
+				//console.log("Reversed Bid:", reversedBid);
+				
+				var array_for_loop = reversedAsk.length > reversedBid.length ? reversedAsk : reversedBid;
+				for( var t=0;t<array_for_loop.length;t++ )
+				{
+					if(t+1 <=2 )
+					{
+						var ask_vol = reversedAsk[t] !== undefined ? reversedAsk[t]['ask'] : 0;
+						var ask_priceRange = reversedAsk[t] !== undefined ? reversedAsk[t]['priceRange'] : '0-0';
+						
+						var bid_vol = reversedBid[t] !== undefined ? reversedBid[t]['bid'] : 0;
+						var bid_priceRange = reversedBid[t] !== undefined ? reversedBid[t]['priceRange'] : '0-0';
+						
+						tableStr += '<tr>'
+						
+						+'<td>'
+						+ ask_priceRange
+						+'</td>'        
+						
+						+'<td>'
+						+ + ( Number( ask_priceRange.split('-')[1] ) - Number( ask_priceRange.split('-')[0] ) ).toFixed(2)
+						+'</td>'        
+						
+						+'<td>'
+						+ ask_vol
+						+'</td>'    
+						
+						+'<td>'
+						+ bid_priceRange
+						+'</td>'        
+						
+						+'<td>'
+						+ + ( Number( bid_priceRange.split('-')[1] ) - Number( bid_priceRange.split('-')[0] ) ).toFixed(2)
+						+'</td>'        
+						
+						+'<td>'
+						+ bid_vol
+						+'</td>'    
+						
+						+'</tr>'
+					}
+				}
+				
+				
+				tableStr +='</table></td></tr>'
+				
+
+
 				
 				var current_candle_HighestVolBar = sortByVolumeSumDescending( single_candle_volume_profile_price_obj )[0]
 				candlewise_highest_vol_price_obj[candleTime] = current_candle_HighestVolBar
