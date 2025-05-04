@@ -154,6 +154,7 @@ th, td {
  <button onclick="showPerticularStocksEquityDataInTable()">GO</button>
  </span>
 <div class="spaceBetweenTables">  	<div id="perticularEquityTableContainer"></div> </div>
+<div class="spaceBetweenTables">  	<div id="poc_changes_timewise_TableContainer"></div> </div>
 <div class="spaceBetweenTables">  	<div id="perticularEquityTableContainer2"></div> </div>
 </center>
 
@@ -1904,6 +1905,100 @@ console.log(  "sorted_total_volume_profile_price_obj", sorted_total_volume_profi
 	 
 	
 	
+	var theadStr = '<thead class="tableRowClass">   <tr>      '
+	+'<th>Time</th>'
+	+'<th>POC</th>' //bid
+	+'<th>Buy</th>'	//ask
+	+'<th>Sell</th>' //bid
+	+'<th>Ratio</th>' //bid
+	
+	//+' <th>Data</th>'
+	
+	+' </tr></thead><tbody>'
+	var tableStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="poc_changes_timewise_TableStr"><caption style="caption-side:top"> POC Changes | '+selectedEquitySymbol+' | '+selectedTradingDate+' | '+'</caption>'+theadStr 
+	//var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	 
+	 var previous_poc_price = 0
+	for ( var candleTime2 in candlewise_highest_vol_price_obj2 ) {
+	
+	var dataArray = candlewise_highest_vol_price_obj2[candleTime2]
+	var ratio = ''
+	var poc_price = dataArray['poc'][0]
+	if( poc_price !=previous_poc_price )
+	{
+	
+	if( dataArray['total_ask'] >= dataArray['total_bid'] )
+	{
+		ratio = (dataArray['total_ask']/dataArray['total_bid']).toFixed(2) + ' Buy'
+	}
+	else
+	{
+		ratio = (dataArray['total_bid']/dataArray['total_ask']).toFixed(2) + ' Sell'
+	}
+	
+	
+	tableStr += '<tr class="item"><td>'
+		//+ timeStampPrevious1+'-'+timeStamp
+		+ candleTime2
+		+'</td><td>'
+		+ dataArray['poc'][0]
+		+'</td><td>'
+		+ dataArray['total_ask']
+		+'</td><td>'
+		+ dataArray['total_bid']
+		+'</td><td>'
+		+ ratio
+		
+		//+ timeStampOfData
+		//+'</td><td><table>'
+		+'</td>'
+		
+		/*
+	for(var element of dataArray )
+	{
+	
+		tableStr += '<tr>'
+		
+		+'<td>'
+		+ element[0]
+		+'</td>'        
+		
+		+'<td>'
+		+ element[1][0] 
+		+'</td>'    
+		
+		+'<td>'
+		+ element[1][1][0]
+		+'</td>'       
+
+		+'<td>'
+		+ element[1][1][1]
+		+'</td>'        
+		
+		+'<td>'
+		+ element[1][1][2]
+		+'</td>'        
+		
+		+'</tr>'
+		
+	}
+	
+	tableStr +='</table></td></tr>'
+*/
+		tableStr +='</tr>'
+		
+		 previous_poc_price = poc_price
+		 
+		}
+	}
+	
+	
+	tableStr +=' </tbody> </table>    </div>  </div>'
+	//optOILosersTablesStr +=' </tbody> </table>    </div>  </div>'
+	
+	 document.getElementById('poc_changes_timewise_TableContainer').innerHTML = tableStr;
+	 //document.getElementById('allSpurtsUnderlyingsColumnsContainer').innerHTML += tablesStrForNegative;
+	 
 	
 	// await addEventListnerInTables()
 }	//	show_spurts_in_oi_underlyings_Data() Function ENDS HERE
