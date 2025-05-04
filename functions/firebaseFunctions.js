@@ -708,6 +708,8 @@ function refreshOrLiveFirebaseData(passedValue)
 {
 	//console.log(passedValue)
 
+	   try {
+
 	if( passedValue=="refresh" || passedValue=="live")
 	  {
 	  var savedSelectedValues = JSON.parse( localStorage.getItem( 'selectedValues' ) )
@@ -719,7 +721,12 @@ function refreshOrLiveFirebaseData(passedValue)
 	
 	  }
 	  
-	  
+            } catch (e) {
+				//document.getElementById('messages').innerHTML = e;
+				console.log("Error in refreshOrLiveFirebaseData function while setting saved values: ", e);
+            }
+	  finally
+	  {  
 	  
 	if( passedValue=="refresh")
 	  {
@@ -735,6 +742,7 @@ function refreshOrLiveFirebaseData(passedValue)
 		saveSelectedValues();
 		fetchDataForAllSegments();
 	  }
+}
 	  
 	}
 
