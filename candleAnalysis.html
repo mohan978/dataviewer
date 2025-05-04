@@ -184,6 +184,14 @@ th, td {
     right: -9px; /* half the width */
     border-radius: 9px;
 }
+
+.noUi-tooltip {
+
+    padding: 0px;
+
+}
+
+
     </style>
 	
 <!--  Slider's Scripts ENDS HERE -->
@@ -386,8 +394,10 @@ width: 98%;
   <br><br>
  
  <center>
+<div class="spaceBetweenTables">  	<div id="highest_ask_bid_orders_tick_wise_TableContainer"></div> </div>
 <div class="spaceBetweenTables">  	<div id="perticularEquityTableContainer"></div> </div>
 <div class="spaceBetweenTables">  	<div id="perticularEquityTableContainer2"></div> </div>
+<div class="spaceBetweenTables">  	<div id="poc_changes_timewise_TableContainer2"></div> </div>
 </center>
 
   
@@ -2177,6 +2187,101 @@ console.log(  "sorted_total_volume_profile_price_obj", sorted_total_volume_profi
 	 document.getElementById('perticularEquityTableContainer2').innerHTML = tableStr;
 	 //document.getElementById('allSpurtsUnderlyingsColumnsContainer').innerHTML += tablesStrForNegative;
 	 
+	 
+	var theadStr = '<thead class="tableRowClass">   <tr>      '
+	+'<th>Time</th>'
+	+'<th>POC</th>' //bid
+	+'<th>Buy</th>'	//ask
+	+'<th>Sell</th>' //bid
+	+'<th>Ratio</th>' //bid
+	
+	//+' <th>Data</th>'
+	
+	+' </tr></thead><tbody>'
+	var tableStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="poc_changes_timewise_TableStr"><caption style="caption-side:top"> POC Changes | '+selectedEquitySymbol+' | '+selectedTradingDate+' | '+'</caption>'+theadStr 
+	//var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	 
+	 var previous_poc_price = 0
+	for ( var candleTime2 in candlewise_highest_vol_price_obj2 ) {
+	
+	var dataArray = candlewise_highest_vol_price_obj2[candleTime2]
+	var ratio = ''
+	var poc_price = dataArray['poc'][0]
+	if( poc_price !=previous_poc_price )
+	{
+	
+	if( dataArray['total_ask'] >= dataArray['total_bid'] )
+	{
+		ratio = (dataArray['total_ask']/dataArray['total_bid']).toFixed(2) + ' Buy'
+	}
+	else
+	{
+		ratio = (dataArray['total_bid']/dataArray['total_ask']).toFixed(2) + ' Sell'
+	}
+	
+	
+	tableStr += '<tr class="item"><td>'
+		//+ timeStampPrevious1+'-'+timeStamp
+		+ candleTime2
+		+'</td><td>'
+		+ dataArray['poc'][0]
+		+'</td><td>'
+		+ dataArray['total_ask']
+		+'</td><td>'
+		+ dataArray['total_bid']
+		+'</td><td>'
+		+ ratio
+		
+		//+ timeStampOfData
+		//+'</td><td><table>'
+		+'</td>'
+		
+		/*
+	for(var element of dataArray )
+	{
+	
+		tableStr += '<tr>'
+		
+		+'<td>'
+		+ element[0]
+		+'</td>'        
+		
+		+'<td>'
+		+ element[1][0] 
+		+'</td>'    
+		
+		+'<td>'
+		+ element[1][1][0]
+		+'</td>'       
+
+		+'<td>'
+		+ element[1][1][1]
+		+'</td>'        
+		
+		+'<td>'
+		+ element[1][1][2]
+		+'</td>'        
+		
+		+'</tr>'
+		
+	}
+	
+	tableStr +='</table></td></tr>'
+*/
+		tableStr +='</tr>'
+		
+		 previous_poc_price = poc_price
+		 
+		}
+	}
+	
+	
+	tableStr +=' </tbody> </table>    </div>  </div>'
+	//optOILosersTablesStr +=' </tbody> </table>    </div>  </div>'
+	
+	 document.getElementById('poc_changes_timewise_TableContainer2').innerHTML = tableStr;
+	 //document.getElementById('allSpurtsUnderlyingsColumnsContainer').innerHTML += tablesStrForNegative;
+	 
 	
 	 await showPipsInSlider(data_object_for_slider)
 	
@@ -2470,7 +2575,7 @@ async function showPipsInSlider( passed_data_obj ) {
 
 
 		
-
+console.log("range2",range2)
 
 			var slider = document.getElementById('slider');
 			noUiSlider.create(slider, {
@@ -2537,6 +2642,7 @@ async function showPipsInSlider( passed_data_obj ) {
 
 
 } //showSliderData() ends here
+
 
 async function fetchSlidersBuildupData2() {
 	//console.log(slider.noUiSlider.get())
@@ -2729,6 +2835,8 @@ function formatDateTime(timestamp) {
 	var previous_tick_price = 0
 	var price_ranges_data_obj = {}
 
+	var highest_ask_bid_orders_tick_wise_obj = {	ask:{},	bid:{},	}
+
 	
 	var theadStr = '<thead class="tableRowClass">   <tr>      '
 	+'<th>Time</th>'
@@ -2855,6 +2963,13 @@ function formatDateTime(timestamp) {
 					{
 						total_volume_profile_price_obj[priceRange] = [ total_volume_profile_price_obj[priceRange][0] + ask, total_volume_profile_price_obj[priceRange] [1] + bid ]
 					}
+					
+					
+					var uniquePriceID = priceRange +'_'+candleTime + '_'+ tick_id 
+					
+					highest_ask_bid_orders_tick_wise_obj ['ask'] [ uniquePriceID ] = ask
+					highest_ask_bid_orders_tick_wise_obj ['bid'] [ uniquePriceID ] = bid
+		
 					
 					/*
 					tableStr += '<tr>'
@@ -3007,7 +3122,7 @@ function formatDateTime(timestamp) {
 	
 	 document.getElementById('candleWiseDataTableContainer').innerHTML = tableStr;
 	 //document.getElementById('allSpurtsUnderlyingsColumnsContainer').innerHTML += tablesStrForNegative;
-	 
+	 console.log("candlewise_highest_vol_price_obj2",candlewise_highest_vol_price_obj2)
 	
 	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
 	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
@@ -3235,6 +3350,192 @@ function formatDateTime(timestamp) {
 	 //document.getElementById('allSpurtsUnderlyingsColumnsContainer').innerHTML += tablesStrForNegative;
 	 
 	
+	
+
+	 
+	var theadStr = '<thead class="tableRowClass">   <tr>      '
+	+'<th>Time</th>'
+	+'<th>Buy Price</th>'
+	+'<th>Buy Quantity</th>'	//ask
+	+'<th> &nbsp;&nbsp;&nbsp;&nbsp; </th>'	//ask
+	+'<th>Time</th>' //bid
+	+'<th>Sell Price</th>' //bid
+	+'<th>Sell Quantity</th>' //bid
+	
+	
+	+' </tr></thead><tbody>'
+	var tableStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="highest_ask_bid_orders_tick_wise_TableStr"><caption style="caption-side:top"> Market Depth Orders | '+selectedEquitySymbol+' | '+selectedTradingDate+' | '+'</caption>'+theadStr 
+	//var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	
+
+	function sortByValueDesc(data) {
+    const sortDescending = (obj) => {
+        return Object.fromEntries(
+            Object.entries(obj)
+                .sort(([, valueA], [, valueB]) => valueB - valueA)
+        );
+    };
+
+    return {
+        ask: sortDescending(data.ask),
+        bid: sortDescending(data.bid)
+    };
+}
+
+
+ var sorted_highest_ask_bid_orders_tick_wise_obj  = sortByValueDesc(highest_ask_bid_orders_tick_wise_obj )
+ //var sorted_highest_ask_bid_orders_tick_wise_obj  = sortByValueDesc(highest_ask_bid_orders_whole_candle_wise_obj  )
+
+	//for ( var uniquePriceID in sorted_highest_ask_bid_orders_tick_wise_obj ['ask'] ) {
+	//for ( var i=0;i< Object.keys(sorted_highest_ask_bid_orders_tick_wise_obj ['ask'] ).length;i++ ) {
+	for ( var i=0;i< 20;i++ ) {
+	
+	var uniquePriceID_ask = Object.keys(sorted_highest_ask_bid_orders_tick_wise_obj ['ask'] )[i]
+	var uniquePriceID_bid = Object.keys(sorted_highest_ask_bid_orders_tick_wise_obj ['bid'] )[i]
+	
+	var quantity_ask = sorted_highest_ask_bid_orders_tick_wise_obj ['ask'] [ uniquePriceID_ask ]
+	var quantity_bid = sorted_highest_ask_bid_orders_tick_wise_obj ['bid'] [ uniquePriceID_bid ]
+	
+	
+	tableStr += '<tr class="item"><td>'
+		//+ timeStampPrevious1+'-'+timeStamp
+		+ uniquePriceID_ask.split('_')[1]
+		+'</td><td>'
+		
+		+ uniquePriceID_ask.split('_')[0]
+		+'</td><td>'
+				
+		//+'</td><td>'
+		//+ ( Number( uniquePriceID_ask.split('-')[1].split('_')[0] ) - Number( uniquePriceID_ask.split('-')[0] ) ).toFixed(2)
+		//+'</td><td>'
+		
+		+ quantity_ask
+		+'</td><td>'
+		+ '		'
+		+'</td><td>'
+		
+		+ uniquePriceID_bid.split('_')[1]
+		+'</td><td>'
+		+ uniquePriceID_bid.split('_')[0]
+		
+		//+'</td><td>'
+		//+ ( Number( uniquePriceID_bid.split('-')[1].split('_')[0]  ) - Number( uniquePriceID_bid.split('-')[0] ) ).toFixed(2)
+		//+'</td><td>'
+		
+		+'</td><td>'
+		+ quantity_bid
+		
+		//+ timeStampOfData
+		+'</td>'
+		
+	tableStr +='</tr>'
+
+		
+		
+	}
+	
+	tableStr +=' </tbody> </table>    </div>  </div>'
+	//optOILosersTablesStr +=' </tbody> </table>    </div>  </div>'
+	
+	 document.getElementById('highest_ask_bid_orders_tick_wise_TableContainer').innerHTML = tableStr;
+	 //document.getElementById('allSpurtsUnderlyingsColumnsContainer').innerHTML += tablesStrForNegative;
+	 
+	
+	 
+	var theadStr = '<thead class="tableRowClass">   <tr>      '
+	+'<th>Time</th>'
+	+'<th>POC</th>' //bid
+	+'<th>Buy</th>'	//ask
+	+'<th>Sell</th>' //bid
+	+'<th>Ratio</th>' //bid
+	
+	//+' <th>Data</th>'
+	
+	+' </tr></thead><tbody>'
+	var tableStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="poc_changes_timewise_TableStr"><caption style="caption-side:top"> POC Changes | '+selectedEquitySymbol+' | '+selectedTradingDate+' | '+'</caption>'+theadStr 
+	//var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	 
+	 var previous_poc_price = 0
+	for ( var candleTime2 in candlewise_highest_vol_price_obj2 ) {
+	
+	var dataArray = candlewise_highest_vol_price_obj2[candleTime2]
+	var ratio = ''
+	var poc_price = dataArray['poc'][0]
+	if( poc_price !=previous_poc_price )
+	{
+	
+	if( dataArray['total_ask'] >= dataArray['total_bid'] )
+	{
+		ratio = (dataArray['total_ask']/dataArray['total_bid']).toFixed(2) + ' Buy'
+	}
+	else
+	{
+		ratio = (dataArray['total_bid']/dataArray['total_ask']).toFixed(2) + ' Sell'
+	}
+	
+	
+	tableStr += '<tr class="item"><td>'
+		//+ timeStampPrevious1+'-'+timeStamp
+		+ candleTime2
+		+'</td><td>'
+		+ dataArray['poc'][0]
+		+'</td><td>'
+		+ dataArray['total_ask']
+		+'</td><td>'
+		+ dataArray['total_bid']
+		+'</td><td>'
+		+ ratio
+		
+		//+ timeStampOfData
+		//+'</td><td><table>'
+		+'</td>'
+		
+		/*
+	for(var element of dataArray )
+	{
+	
+		tableStr += '<tr>'
+		
+		+'<td>'
+		+ element[0]
+		+'</td>'        
+		
+		+'<td>'
+		+ element[1][0] 
+		+'</td>'    
+		
+		+'<td>'
+		+ element[1][1][0]
+		+'</td>'       
+
+		+'<td>'
+		+ element[1][1][1]
+		+'</td>'        
+		
+		+'<td>'
+		+ element[1][1][2]
+		+'</td>'        
+		
+		+'</tr>'
+		
+	}
+	
+	tableStr +='</table></td></tr>'
+*/
+		tableStr +='</tr>'
+		
+		 previous_poc_price = poc_price
+		 
+		}
+	}
+	
+	
+	tableStr +=' </tbody> </table>    </div>  </div>'
+	//optOILosersTablesStr +=' </tbody> </table>    </div>  </div>'
+	
+	 document.getElementById('poc_changes_timewise_TableContainer2').innerHTML = tableStr;
+	 //document.getElementById('allSpurtsUnderlyingsColumnsContainer').innerHTML += tablesStrForNegative;
+	 
 	
 	 //showPipsInSlider(data_object_for_slider)
 	
@@ -4648,7 +4949,7 @@ function tableSortAndPushData(tableHead,event)
 
 <!-- Floating Buttons Code Starts Here -->
 <style>		.float{	position:fixed;	width:25px;	height:50px;	bottom:16%;	right:10px;			border-radius:50px;	text-align:center;	}.vertical-centerFloat {   float: right;  margin: 0;  position: sticky;  top: 50%;  -ms-transform: translateY(-50%);  transform: translateY(-50%);	}  .Floatbtn{ margin-top:1px;} </style>
-<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('commonTimeValues').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	   	 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button>	</div>
+<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('commonTimeValues').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	   	 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button>		<button class="Floatbtn" onclick="document.getElementById('highest_ask_bid_orders_tick_wise_TableContainer').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button><br/>	 </div>
 <!--<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('IndicesPerformanceChart').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	    <button class="Floatbtn" onclick="getFirestoreData('refresh','')"><b><span style="font-size:20px;">&#8635;</span></b></button><br/>		 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button><br/>	    <button class="Floatbtn" onclick="document.getElementById(\'indices_performance_time\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	<br/>	    <button class="Floatbtn" onclick="document.getElementById(\'EquitySpurtsContainerDiv\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	<br/>	    <button class="Floatbtn" onclick="document.getElementById(\'heatMapSectorSelector\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	</div> -->
 <!-- Floating Buttons Code Ends Here -->
 
