@@ -1613,6 +1613,8 @@ async function showLiveScannerAllStocksDataInTable()
 	+' <th>POC</th>'
 	+' <th>LTP</th>'
 	+' <th>TimeHVP</th>'
+	+' <th>HVP Near High</th>'
+	+' <th>HVP Near Low</th>'
 	
 	
 	+' <th>BuyChng</th>'
@@ -1641,6 +1643,12 @@ async function showLiveScannerAllStocksDataInTable()
 	var LTP_near_HighestVolBar_priceRange =  Math.abs(LastPrice - HighestVolBar_priceRange) / HighestVolBar_priceRange *100
 	var LTP_near_POC =  Math.abs(LastPrice - POC_Price) / POC_Price *100
 	
+	var day_high = dataObj['day_high']
+	var day_low = dataObj['day_low']
+	var HighestVolBar_candle_high = Number( dataObj['HighestVolBar'][0][1]['currentCandle'][2] )
+	var HighestVolBar_candle_low = Number( dataObj['HighestVolBar'][0][1]['currentCandle'][3] )
+	var HighestVolBar_near_day_high =  Math.abs(day_high - HighestVolBar_candle_high) / HighestVolBar_candle_high *100
+	var HighestVolBar_near_day_low =  Math.abs(day_low - HighestVolBar_candle_low) / HighestVolBar_candle_low *100
 	
 	var pChange_total_1m = 0
 	if( dataObj['pChange_total_1m'] !=undefined )
@@ -1767,6 +1775,10 @@ async function showLiveScannerAllStocksDataInTable()
 		+ LastPrice
 		+'</td><td>'
 		+ HighestVolBar_time
+		+'</td><td>'
+		+ HighestVolBar_near_day_high.toFixed(3)
+		+'</td><td>'
+		+ HighestVolBar_near_day_low.toFixed(3)
 		+'</td><td>'
 		+ ( dataObj['total_ask'] - HighestVolBar_priceRange_total_ask )
 		+'</td><td>'
