@@ -141,6 +141,225 @@ th, td {
 
 
 
+<!-- Slider's Scripts STARTS from HERE -->
+
+  <!-- <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/3.0.7/flatpickr.min.css"> -->
+ <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/10.1.0/nouislider.min.css">
+  <!-- <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.4.2/css/bulma.min.css"> -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.3.4/vue.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/3.0.7/flatpickr.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/10.1.0/nouislider.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+  
+ <style>
+    #slider {
+    height: 10px;
+}
+
+#slider .noUi-connect {
+    background: #c0392b;
+}
+
+#slider .noUi-handle {
+    height: 18px;
+    width: 18px;
+    top: -5px;
+    right: -9px; /* half the width */
+    border-radius: 9px;
+}
+
+.noUi-tooltip {
+
+    padding: 0px;
+
+}
+
+
+    </style>
+	
+<!--  Slider's Scripts ENDS HERE -->
+
+
+<!--Content Start From Here-->
+   <style>
+        #sliderContainer {
+            display: inline-block;
+            vertical-align: middle;
+            padding: 10px;
+			 width: 100%;
+        }
+
+
+        #slider {
+            width: 100%;
+        }
+
+  
+        button {
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 5px;
+        }
+    </style>
+	
+	 <style>
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #555;
+  color: white; 
+   text-align: center;
+  }
+  
+   
+ .column {
+  float: left;
+  padding: 0.5px;
+  height: 590px;
+  margin-top:0px;
+}
+
+.Left {
+  width: 55%;
+  margin-left:1%;
+}
+
+.Right {
+  width: 42%;
+  margin-right:1%;
+  margin-left:0.5%;
+  margin-bottom:12px;
+}
+
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+  
+}
+
+ .Side {
+  float: left;
+  padding: 0.5px;
+  height: 292px;
+  width: 49.5%;
+  
+}
+
+.First {
+  width: 49.5%;
+  margin-left:0.25%;
+  margin-bottom:2px;
+}
+
+.Second {
+  width: 49.5%;
+  margin-right:0.1%;
+  margin-left:0.25%;
+  margin-bottom:2px;
+  
+}
+
+.Bar1 {
+  float: left;
+  padding: 0.0px;
+  height: 32px;
+  width: 100%;
+  margin-top:10px;
+}
+
+.sliderbar {
+  width: 92%;
+  height: 32px;
+  margin-left:1%;
+}
+
+.sliderBtn {
+  width: 6.5%;
+  height: 32px;
+  margin-left:0.2%;
+}
+
+.SmallBoxes{
+height: 292px;
+}
+
+.SliderGO{
+font-size: 18px;
+margin-left:-10px ;
+margin-top: 1.5px;
+}
+
+.SliderGO:active {
+  background-color: #4CAF50;
+  box-shadow: 0 5px #666;
+  transform: translateY(2px);
+  color: white;
+}
+
+.IntradayOI {
+width: 48.5%;
+}
+
+.TotalOI {
+width: 48.5%;
+}
+
+
+@media screen and (max-width: 700px) {
+  .column {
+    width: 98%;
+	font-size: 15px;
+	margin-left:1.5%;
+	margin-right:1.5%;
+  margin-bottom:12px;
+  }
+  
+  .Side {
+  float: left;
+  padding: 0.5px;
+  height: 270px;
+  width: 49.5%;
+  margin-bottom:2px;  
+}
+
+.SmallBoxes{
+height: 270px;
+}
+
+.SliderGO{
+font-size: 16px;
+width: 50%;
+}
+
+.sliderBtn {
+  width: 98%;
+  margin-top:55px;
+  }
+  
+  .sliderbar {
+  width: 98%;
+  height: 35px;
+  margin-left:0%;
+}
+
+.IntradayOI {
+width: 98%;
+}
+
+.TotalOI {
+width: 98%;
+}
+
+
+}
+</style>
+
+
+
+
+
 <center>
 
 <hr>
@@ -154,10 +373,29 @@ th, td {
  <button onclick="showPerticularStocksEquityDataInTable()">GO</button>
  </span>
 <div class="spaceBetweenTables">  	<div id="perticularEquityTableContainer"></div> </div>
+
+
+<br><br>
+  <div class="row">
+  <div class="Bar1 sliderbar" style="background-color:;">
+    <div id="sliderContainer">
+            <div id="slider"></div>
+        </div>
+  </div>
+  <div class="Bar1 sliderBtn" style="background-color:;">
+    <button class="SliderGO"onclick="showPerticularStocksEquityDataInTable()()">GO</button>
+  </div>
+          
+  </div>
+  <br><br>
+
+<div class="spaceBetweenTables">  	<div id="highest_ask_bid_orders_tick_wise_TableContainer"></div> </div>
+<div class="spaceBetweenTables">  	<div id="poc_changes_timewise_TableContainer"></div> </div>
 <div class="spaceBetweenTables">  	<div id="volumeProfile_EquityTableContainer"></div> </div>
 <div class="spaceBetweenTables">  	<div id="perticularEquityTableContainer2"></div> </div>
 
-<div class="spaceBetweenTables">  	<div id="highest_ask_bid_orders_tick_wise_TableContainer"></div> </div>
+
+
 </center>
 
 
@@ -1835,6 +2073,199 @@ async function showLiveScannerAllStocksDataInTable()
 }	//	show_spurts_in_oi_underlyings_Data() Function ENDS HERE
 
 
+
+var sliderValuesForTimeValuesObj ={}
+function convert24HTimeInto12HTime(timeValue) {
+  var timeArray = timeValue.split(":");
+  var hours = parseInt(timeArray[0]);
+  
+  // Adjust the hours if necessary
+  if (hours > 12) {
+    hours -= 12;
+  }
+  
+  var convertedTime = ("0" + hours).slice(-2) + ":" + timeArray[1];
+  return convertedTime;
+}
+
+async function showPipsInSlider( passed_data_obj ) {
+	//console.log( "passed_data_obj", passed_data_obj )
+	//localStorage.setItem("candleWiseDataObj", JSON.stringify( passed_data_obj ));
+	//await fetchAndSaveDataIDB( docPath );
+	//await saveDataInIDB("candleWiseDataObj", passed_data_obj) 
+		
+	function formatDateTime(timestamp) {
+		const date = new Date(timestamp);
+		const year = date.getFullYear();
+		const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+		const day = String(date.getDate()).padStart(2, '0');
+		const hours = String(date.getHours()).padStart(2, '0');
+		const minutes = String(date.getMinutes()).padStart(2, '0');
+		const seconds = String(date.getSeconds()).padStart(2, '0');
+
+		return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+	}
+
+	
+	var currentDayData = passed_data_obj
+
+	var data_object_for_slider = {}
+
+	if( Object.keys(currentDayData).length != Object.keys(sliderValuesForTimeValuesObj).length )
+	{
+	
+	for( var i=0;i<Object.keys(currentDayData).length;i++ ){
+	//for( var i=0;i<2;i++ ){
+		var c = Object.keys(currentDayData)[i]
+		//var candleTime = formatDateTime( Number(c) ).split(' ')[1]; // 1738813500000 Output: 2025-03-08 13:45:00
+		var candleTime = formatDateTime( Number(c) ).split(' ')[1].replace(':00', ''); // 1738813500000 Output: 2025-03-08 13:45:00
+		data_object_for_slider[ candleTime ] = currentDayData[c]
+
+	}
+	
+
+
+	var selectedYear = document.getElementById('year').value
+	var selectedMonthYear = document.getElementById('monthYear').value
+	var selectedTradingDate = document.getElementById('tradingDate').value
+	
+	var selectedEquityTimeRef = document.getElementById('equityTimeValues')
+	var selectedEquityTimeValue = selectedEquityTimeRef.value
+
+	var tradingDate = document.getElementById('tradingDate').value
+	var selectedSymbol = document.getElementById('derivativesSymbols').value
+	//var optionChainTimeValuesArray= firestoreIndexObj[ tradingDate ]['Index']['option_chain_data'][selectedSymbol]['timeValues']
+	
+	// Use keys from passed_data_obj instead of <select> options
+	//const optionChainTimeValuesArray = Object.keys(passed_data_obj);
+	const optionChainTimeValuesArray = Object.keys(data_object_for_slider);
+
+	// Get the latest time (last key)
+	const selectedTime = optionChainTimeValuesArray[optionChainTimeValuesArray.length - 1];
+	console.log("selectedTime", selectedTime);
+
+	// Get time 14 steps before the latest one, if it exists
+	//let pre15StempsTimeIndex = optionChainTimeValuesArray.length - 15;
+	let pre15StempsTimeIndex = 0;
+	if (pre15StempsTimeIndex < 0) pre15StempsTimeIndex = 1;  // fallback to second element
+
+	const pre15StempsTime = optionChainTimeValuesArray[pre15StempsTimeIndex];
+	console.log("pre15StempsTime", pre15StempsTime);
+
+
+
+	// Reset slider container
+	document.getElementById('sliderContainer').innerHTML = '<div id="slider"></div>';
+
+	let percentage = 0;
+	const initialSlider = [timeToMinutes(pre15StempsTime), timeToMinutes(selectedTime)];
+	const range2 = {};
+
+	const keysLength = optionChainTimeValuesArray.length;
+	let previous_key = timeToMinutes("09:15:00");
+	let index = 0;
+	let timeValues = "";
+
+	optionChainTimeValuesArray.forEach((key, i) => {
+		const current = timeToMinutes(key);
+		const difference = current - previous_key;
+		const label = key.split(':')[0] + ":" + key.split(':')[1];
+
+		// Add unique hour:minute labels for pips
+		if (!timeValues.includes(label + "#")) {
+			timeValues += `${label}#${current},`;
+		}
+
+		const arr = [previous_key, difference];
+		percentage += 100 / keysLength;
+
+		if (i === 0 || difference === 0) {
+			// skip adding range on first iteration or no time gap
+		} else if (i === 1) {
+			range2['min'] = arr;
+		} else if (i === keysLength - 1) {
+			range2['max'] = [current];
+			timeValues += `${label}#${current},`; // final label
+		} else {
+			range2[`${percentage.toFixed(2)}%`] = arr;
+		}
+
+		// 12-hour to 24-hour mapping
+		sliderValuesForTimeValuesObj[convert24HTimeInto12HTime(key)] = key;
+
+		previous_key = current;
+	});
+
+
+		
+console.log("range2",range2)
+
+			var slider = document.getElementById('slider');
+			noUiSlider.create(slider, {
+				start: initialSlider,
+				connect: true,
+				step: 3,
+				tooltips: [true, true],
+
+				range: range2,
+
+				pips: {
+					mode: 'steps',
+					density: 4,
+					//values: [0, 720, 1439],
+					filter: function (value, type) {
+						// //console.log(type, value, value % 60);
+						// document.getElementById('temp').innerHTML += value+': '+ (value % 240) +',  '+(value % 60)+', '+(value % (60 * 4) === 0 ? 1 : value % 60 === 0 ? 2 : 0)+'<br>';
+
+						if (timeValues.includes(value))
+							//if(value==555 || value==930)
+							return 1
+						else
+							return value % (60 * 4) === 0 ? 1 : value % 60 === 0 ? 1 : 0;
+					},
+					//density: 2,
+					format: {
+						to: function (value) {
+							if (timeValues.includes(value)) {
+								//if (value % (60) === 0 || value==555  || value==930) {
+								// return moment().startOf('day').add(value, 'minutes').format('hh:mm A');
+								return moment().startOf('day').add(value, 'minutes').format('hh:mm');
+							}
+							return '';
+						},
+						from: function (value) {
+							return value;
+						}
+					}
+				},
+
+
+				format: {
+					to: function (value) {
+						//return value + ',-';
+						//return moment().startOf('day').add(value, 'minutes').format('hh:mm A');
+						return moment().startOf('day').add(value, 'minutes').format('hh:mm');
+					},
+					from: function (value) {
+						return value;
+					}
+				}
+			});
+
+
+	}
+	
+	//document.getElementById('slider').setAttribute('onclick','fetchSlidersBuildupData()')
+	//document.getElementsByClassName('noUi-handle noUi-handle-lower')[0].setAttribute('onmouseup','fetchSlidersBuildupData()')
+	//document.getElementsByClassName('noUi-handle noUi-handle-upper')[0].setAttribute('onmouseup','fetchSlidersBuildupData()')
+
+	//document.getElementById('slider').setAttribute('onclick', 'showData("flexibleSlider")')
+	//document.getElementsByClassName('noUi-handle noUi-handle-lower')[0].setAttribute('onmouseup', 'showData("flexibleSlider")')
+	//document.getElementsByClassName('noUi-handle noUi-handle-upper')[0].setAttribute('onmouseup', 'showData("flexibleSlider")')
+
+
+} //showSliderData() ends here
+
 async function showPerticularStocksEquityDataInTable()
 {
 	 document.getElementById('volumeProfile_EquityTableContainer').innerHTML = "";
@@ -1921,8 +2352,25 @@ function formatDateTime(timestamp) {
 	var highest_ask_bid_orders_whole_candle_wise_obj = {	ask:{},	bid:{},	}
 	
 	
-	for( var i=0;i<Object.keys(currentDayData).length;i++ ){
+	var previous_tick_price = 0
+	var price_ranges_data_obj = {}
+	var iceberg_orders_data_obj =  {	ask:{},	bid:{},	}
+
+
+	
+	await showPipsInSlider(candleWiseDataObj)
+	
+	var fromTime = sliderValuesForTimeValuesObj[ slider.noUiSlider.get()[0] ];
+	var toTime = sliderValuesForTimeValuesObj[ slider.noUiSlider.get()[1] ];
+	var candleWiseDataObjKeysArray = Object.values( sliderValuesForTimeValuesObj )
+	//console.log( "candleWiseDataObjKeysArray", candleWiseDataObjKeysArray )
+	var fromIndex = candleWiseDataObjKeysArray.indexOf(fromTime);
+	var toIndex = candleWiseDataObjKeysArray.indexOf(toTime);
+	
+	
+	//for( var i=0;i<Object.keys(currentDayData).length;i++ ){
 	//for( var i=0;i<2;i++ ){
+	for (var i = fromIndex; i <= toIndex; i++) {
 		var c = Object.keys(currentDayData)[i]
 		//console.log("c", c)
 	
@@ -1941,6 +2389,25 @@ function formatDateTime(timestamp) {
 			{
 				var hhists_data_array = currentDayData[c]['graphicsCmds']['create']['hhists'][0]['data']
 				var single_candle_volume_profile_price_obj = {}
+				
+				
+				// iceberg orders code starts here
+				var previous_tick_difference = 0
+				
+				var previous_iceberg_executed_ask = 1
+				var total_iceberg_executed_ask = 0
+				var previous_iceberg_executed_ask_tick_counter = 0
+				
+				var previous_iceberg_executed_bid = 1
+				var total_iceberg_executed_bid = 0
+				var previous_iceberg_executed_bid_tick_counter = 0
+
+				var start_iceberg_ask_price = 0
+				var start_iceberg_bid_price = 0
+				// iceberg orders code ends here
+				
+				var tick_counter = 0
+				
 				for( var tick of hhists_data_array )
 				{
 					
@@ -1952,10 +2419,19 @@ function formatDateTime(timestamp) {
 					var bid = tick['rate'][1]
 					total_ask_bid['ask'] += ask
 					total_ask_bid['bid'] += bid
+					
+					
+					if( previous_tick_price==0 )
+					{
+						previous_tick_price = priceLow
+					}
+					
 					//var priceRange = priceLow +'-'+ priceHigh
 					//var priceRange = priceLow 
 					var priceRange = previous_tick_price +'-'+ priceLow 
 					
+					var tick_difference = Math.abs( ( Number( priceRange.split('-')[1] ) - Number( priceRange.split('-')[0] ) ).toFixed(2) )
+					 
 					if(single_candle_volume_profile_price_obj[priceRange] ==undefined )
 					{
 						single_candle_volume_profile_price_obj[priceRange] = [ ask, bid, ask+bid ]
@@ -2005,7 +2481,106 @@ function formatDateTime(timestamp) {
 		
 	
 					
+					// iceberg orders code starts here
+					if( tick_counter== 0 )
+					{
+						previous_tick_difference = tick_difference
+						previous_iceberg_executed_ask = ask
+						previous_iceberg_executed_bid = bid
+						previous_iceberg_executed_ask_tick_counter = tick_counter
+						
+						start_iceberg_ask_price = priceLow
+						start_iceberg_bid_price = priceLow
+					}
+					else   
+					{
+					
+					if( tick_difference == previous_tick_difference && ( tick_counter - previous_iceberg_executed_ask_tick_counter ) ==1  || ask==previous_iceberg_executed_ask && previous_iceberg_executed_ask !=0 )
+					{
+						// ask iceberg
+						previous_iceberg_executed_ask_tick_counter = tick_counter
+						total_iceberg_executed_ask += previous_iceberg_executed_ask
+						previous_iceberg_executed_ask = ask
+						if(start_iceberg_ask_price.includes('ICB') ==false )
+							start_iceberg_ask_price = 'ICB-'+ start_iceberg_ask_price
+						//console.log( candleTime, total_iceberg_executed_ask )
+						
+					} 
+					else if(  ask !=0 || ((tick_counter+1) == hhists_data_array.length) ) 
+					//else 
+					{ 	// ask iceberg break
+						total_iceberg_executed_ask += previous_iceberg_executed_ask
+						var uniquePriceID =  start_iceberg_ask_price +'-'+ priceLow  +'_'+candleTime + '_'+ tick_id 
+					
+						iceberg_orders_data_obj ['ask'] [ uniquePriceID ] = total_iceberg_executed_ask
+						
+						//console.log( candleTime, uniquePriceID, total_iceberg_executed_ask )
+						total_iceberg_executed_ask = 0
+						previous_iceberg_executed_ask = ask
+						start_iceberg_ask_price = priceLow
+						//console.log( "hhists_data_array", hhists_data_array )
+					}
+					
+					if( tick_difference == previous_tick_difference && ( tick_counter - previous_iceberg_executed_bid_tick_counter ) ==1  || bid==previous_iceberg_executed_bid && previous_iceberg_executed_bid !=0 )
+					{
+						// ask iceberg
+						previous_iceberg_executed_bid_tick_counter = tick_counter
+						total_iceberg_executed_bid += previous_iceberg_executed_bid
+						previous_iceberg_executed_bid = bid
+						if(start_iceberg_bid_price.includes('ICB') ==false )
+							start_iceberg_bid_price = 'ICB-'+ start_iceberg_bid_price
+						//console.log( candleTime, total_iceberg_executed_ask )
+						
+					}
+					else if(  bid !=0 || ((tick_counter+1) == hhists_data_array.length) ) 
+					//else 
+					{ 	// ask iceberg break
+						total_iceberg_executed_bid += previous_iceberg_executed_bid
+						var uniquePriceID =  start_iceberg_bid_price +'-'+ priceLow  +'_'+candleTime + '_'+ tick_id 
+					
+						iceberg_orders_data_obj ['bid'] [ uniquePriceID ] = total_iceberg_executed_bid
+						
+						//console.log( candleTime, uniquePriceID, total_iceberg_executed_ask )
+						total_iceberg_executed_bid = 0
+						previous_iceberg_executed_bid = bid
+						start_iceberg_bid_price = priceLow
+						//console.log( "hhists_data_array", hhists_data_array )
+					}
+					
+					if( total_iceberg_executed_ask!=0 && ((tick_counter+1) == hhists_data_array.length) ) 
+					//else 
+					{ 	// ask iceberg break
+						total_iceberg_executed_ask += previous_iceberg_executed_ask
+						var uniquePriceID =  start_iceberg_ask_price +'-'+ priceLow  +'_'+candleTime + '_'+ tick_id 
+					
+						iceberg_orders_data_obj ['ask'] [ uniquePriceID ] = total_iceberg_executed_ask
+						
+						//console.log( candleTime, uniquePriceID, total_iceberg_executed_ask )
+					
+						//console.log( "hhists_data_array", hhists_data_array )
+					}
+					
+					if( total_iceberg_executed_bid !=0 && ((tick_counter+1) == hhists_data_array.length) ) 
+					//else 
+					{ 	// ask iceberg break
+						total_iceberg_executed_bid += previous_iceberg_executed_bid
+						var uniquePriceID =  start_iceberg_bid_price +'-'+ priceLow  +'_'+candleTime + '_'+ tick_id 
+					
+						iceberg_orders_data_obj ['bid'] [ uniquePriceID ] = total_iceberg_executed_bid
+						
+						//console.log( candleTime, uniquePriceID, total_iceberg_executed_ask )
+					
+						//console.log( "hhists_data_array", hhists_data_array )
+					}
+					
+					}
+					
+					previous_tick_difference = tick_difference
+					
+					// iceberg orders code ends here
+					
 					previous_tick_price = priceLow
+					tick_counter ++
 				}
 				
 				
@@ -2270,19 +2845,23 @@ console.log(  "sorted_total_volume_profile_price_obj", sorted_total_volume_profi
 	 document.getElementById('perticularEquityTableContainer2').innerHTML = tableStr;
 	 //document.getElementById('allSpurtsUnderlyingsColumnsContainer').innerHTML += tablesStrForNegative;
 	 
-	
+	 
+	//console.log( 'iceberg_orders_data_obj', iceberg_orders_data_obj )
+	highest_ask_bid_orders_tick_wise_obj = iceberg_orders_data_obj
+
+	 
 	var theadStr = '<thead class="tableRowClass">   <tr>      '
+	+'<th>Time</th>'
 	+'<th>Buy Price</th>'
-	+'<th>Buy Zone</th>'
-	
 	+'<th>Buy Quantity</th>'	//ask
+	+'<th> &nbsp;&nbsp;&nbsp;&nbsp; </th>'	//ask
+	+'<th>Time</th>' //bid
 	+'<th>Sell Price</th>' //bid
-	+'<th>Sell Zone</th>'
 	+'<th>Sell Quantity</th>' //bid
 	
 	
 	+' </tr></thead><tbody>'
-	var tableStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="highest_ask_bid_orders_tick_wise_TableStr"><caption style="caption-side:top"> Market Depth Orders | '+selectedEquitySymbol+' | '+selectedTradingDate+' | '+'</caption>'+theadStr 
+	var tableStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="highest_ask_bid_orders_tick_wise_TableStr"><caption style="caption-side:top"> Big Buy/Sell Orders | '+fromTime+' - '+toTime+' | '+selectedEquitySymbol+' | '+selectedTradingDate+' | '+'</caption>'+theadStr 
 	//var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
 	
 
@@ -2303,33 +2882,62 @@ console.log(  "sorted_total_volume_profile_price_obj", sorted_total_volume_profi
 
  var sorted_highest_ask_bid_orders_tick_wise_obj  = sortByValueDesc(highest_ask_bid_orders_tick_wise_obj )
  //var sorted_highest_ask_bid_orders_tick_wise_obj  = sortByValueDesc(highest_ask_bid_orders_whole_candle_wise_obj  )
+//console.log( 'sorted_highest_ask_bid_orders_tick_wise_obj', sorted_highest_ask_bid_orders_tick_wise_obj )
 
+				
+				var ask_keys = Object.keys(sorted_highest_ask_bid_orders_tick_wise_obj ['ask'] )
+				var bid_keys = Object.keys(sorted_highest_ask_bid_orders_tick_wise_obj ['bid'] )
+
+				//console.log("Reversed Ask:", reversedAsk);
+				//console.log("Reversed Bid:", reversedBid);
+				
+				var array_for_loop = ask_keys.length > bid_keys.length ? ask_keys : bid_keys;
+				
+				
 	//for ( var uniquePriceID in sorted_highest_ask_bid_orders_tick_wise_obj ['ask'] ) {
 	//for ( var i=0;i< Object.keys(sorted_highest_ask_bid_orders_tick_wise_obj ['ask'] ).length;i++ ) {
 	for ( var i=0;i< 20;i++ ) {
+	//for( var i=0;i<array_for_loop.length;i++ ) {
 	
+	/*
 	var uniquePriceID_ask = Object.keys(sorted_highest_ask_bid_orders_tick_wise_obj ['ask'] )[i]
 	var uniquePriceID_bid = Object.keys(sorted_highest_ask_bid_orders_tick_wise_obj ['bid'] )[i]
 	
 	var quantity_ask = sorted_highest_ask_bid_orders_tick_wise_obj ['ask'] [ uniquePriceID_ask ]
 	var quantity_bid = sorted_highest_ask_bid_orders_tick_wise_obj ['bid'] [ uniquePriceID_bid ]
+	*/
 	
+	var uniquePriceID_ask = Object.keys(sorted_highest_ask_bid_orders_tick_wise_obj ['ask'] )[i] !== undefined ? Object.keys(sorted_highest_ask_bid_orders_tick_wise_obj ['ask'] )[i] :  '0_0_0';
+	var uniquePriceID_bid = Object.keys(sorted_highest_ask_bid_orders_tick_wise_obj ['bid'] )[i] !== undefined ? Object.keys(sorted_highest_ask_bid_orders_tick_wise_obj ['bid'] )[i] :  '0_0_0';
+	
+	var quantity_ask = sorted_highest_ask_bid_orders_tick_wise_obj ['ask'] [ uniquePriceID_ask ] !== undefined ? sorted_highest_ask_bid_orders_tick_wise_obj ['ask'] [ uniquePriceID_ask ] : 0;
+	var quantity_bid = sorted_highest_ask_bid_orders_tick_wise_obj ['bid'] [ uniquePriceID_bid ] !== undefined ? sorted_highest_ask_bid_orders_tick_wise_obj ['bid'] [ uniquePriceID_bid ] : 0;
+	
+
 	
 	tableStr += '<tr class="item"><td>'
 		//+ timeStampPrevious1+'-'+timeStamp
-		+ uniquePriceID_ask
+		+ uniquePriceID_ask.split('_')[1]
+		+'</td><td>'
+		
+		+ uniquePriceID_ask.split('_')[0]
 		+'</td><td>'
 				
 		//+'</td><td>'
-		+ ( Number( uniquePriceID_ask.split('-')[1].split('_')[0] ) - Number( uniquePriceID_ask.split('-')[0] ) ).toFixed(2)
-		+'</td><td>'
+		//+ ( Number( uniquePriceID_ask.split('-')[1].split('_')[0] ) - Number( uniquePriceID_ask.split('-')[0] ) ).toFixed(2)
+		//+'</td><td>'
 		
 		+ quantity_ask
 		+'</td><td>'
-		+ uniquePriceID_bid
-		
+		+ '		'
 		+'</td><td>'
-		+ ( Number( uniquePriceID_bid.split('-')[1].split('_')[0]  ) - Number( uniquePriceID_bid.split('-')[0] ) ).toFixed(2)
+		
+		+ uniquePriceID_bid.split('_')[1]
+		+'</td><td>'
+		+ uniquePriceID_bid.split('_')[0]
+		
+		//+'</td><td>'
+		//+ ( Number( uniquePriceID_bid.split('-')[1].split('_')[0]  ) - Number( uniquePriceID_bid.split('-')[0] ) ).toFixed(2)
 		//+'</td><td>'
 		
 		+'</td><td>'
@@ -2351,6 +2959,109 @@ console.log(  "sorted_total_volume_profile_price_obj", sorted_total_volume_profi
 	 //document.getElementById('allSpurtsUnderlyingsColumnsContainer').innerHTML += tablesStrForNegative;
 	 
 	
+	 
+	var theadStr = '<thead class="tableRowClass">   <tr>      '
+	+'<th>Time</th>'
+	+'<th>POC</th>' //bid
+	+'<th>POC Ask</th>' //bid
+	+'<th>POC Bid</th>' //bid
+	+'<th>Buy</th>'	//ask
+	+'<th>Sell</th>' //bid
+	+'<th>Ratio</th>' //bid
+	
+	//+' <th>Data</th>'
+	
+	+' </tr></thead><tbody>'
+	var tableStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="poc_changes_timewise_TableStr"><caption style="caption-side:top"> POC Changes | '+selectedEquitySymbol+' | '+selectedTradingDate+' | '+'</caption>'+theadStr 
+	//var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	 //console.log("candlewise_highest_vol_price_obj2",candlewise_highest_vol_price_obj2)
+	 var previous_poc_price = 0
+	for ( var candleTime2 in candlewise_highest_vol_price_obj2 ) {
+	
+	var dataArray = candlewise_highest_vol_price_obj2[candleTime2]
+	var ratio = ''
+	var poc_price = dataArray['poc'][0]
+	var poc_ask = dataArray['poc'][1][0]
+	var poc_bid = dataArray['poc'][1][1]
+	if( poc_price !=previous_poc_price )
+	{
+	
+	if( dataArray['total_ask'] >= dataArray['total_bid'] )
+	{
+		ratio = (dataArray['total_ask']/dataArray['total_bid']).toFixed(2) + ' Buy'
+	}
+	else
+	{
+		ratio = (dataArray['total_bid']/dataArray['total_ask']).toFixed(2) + ' Sell'
+	}
+	
+	
+	tableStr += '<tr class="item"><td>'
+		//+ timeStampPrevious1+'-'+timeStamp
+		+ candleTime2
+		+'</td><td>'
+		+ dataArray['poc'][0]
+		+'</td><td>'
+		+ poc_ask
+		+'</td><td>'
+		+ poc_bid
+		+'</td><td>'
+		+ dataArray['total_ask']
+		+'</td><td>'
+		+ dataArray['total_bid']
+		+'</td><td>'
+		+ ratio
+		
+		//+ timeStampOfData
+		//+'</td><td><table>'
+		+'</td>'
+		
+		/*
+	for(var element of dataArray )
+	{
+	
+		tableStr += '<tr>'
+		
+		+'<td>'
+		+ element[0]
+		+'</td>'        
+		
+		+'<td>'
+		+ element[1][0] 
+		+'</td>'    
+		
+		+'<td>'
+		+ element[1][1][0]
+		+'</td>'       
+
+		+'<td>'
+		+ element[1][1][1]
+		+'</td>'        
+		
+		+'<td>'
+		+ element[1][1][2]
+		+'</td>'        
+		
+		+'</tr>'
+		
+	}
+	
+	tableStr +='</table></td></tr>'
+*/
+		tableStr +='</tr>'
+		
+		 previous_poc_price = poc_price
+		 
+		}
+	}
+	
+	
+	tableStr +=' </tbody> </table>    </div>  </div>'
+	//optOILosersTablesStr +=' </tbody> </table>    </div>  </div>'
+	
+	 document.getElementById('poc_changes_timewise_TableContainer').innerHTML = tableStr;
+	 //document.getElementById('allSpurtsUnderlyingsColumnsContainer').innerHTML += tablesStrForNegative;
+	 
 	
 	 await addEventListnerInTables()
 }	//	show_spurts_in_oi_underlyings_Data() Function ENDS HERE
@@ -3676,7 +4387,7 @@ var functionStr ="addOnclickEvent();" + tableHead[j].getAttribute('onclick')
 }
 else
 {
-var functionStr = "document.getElementById('derivativesSymbols').value ='"+tableData.innerHTML+"';showPerticularStocksEquityDataInTable();document.getElementById('volumeProfile_EquityTableContainer').scrollIntoView();"
+var functionStr = "document.getElementById('derivativesSymbols').value ='"+tableData.innerHTML+"';showPerticularStocksEquityDataInTable();document.getElementById('highest_ask_bid_orders_tick_wise_TableContainer').scrollIntoView();"
 tableData.setAttribute('onclick', functionStr)
 }
 }
@@ -3755,7 +4466,7 @@ function tableSortAndPushData(tableHead,event)
 
 <!-- Floating Buttons Code Starts Here -->
 <style>		.float{	position:fixed;	width:25px;	height:50px;	bottom:16%;	right:10px;			border-radius:50px;	text-align:center;	}.vertical-centerFloat {   float: right;  margin: 0;  position: sticky;  top: 50%;  -ms-transform: translateY(-50%);  transform: translateY(-50%);	}  .Floatbtn{ margin-top:1px;} </style>
-<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('commonTimeValues').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	   	 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button>	</div>
+<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('commonTimeValues').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	   	 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button>		<button class="Floatbtn" onclick="document.getElementById('highest_ask_bid_orders_tick_wise_TableContainer').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button><br/>	 </div>
 <!--<div class="float"> 	<button class="Floatbtn" onclick="document.getElementById('IndicesPerformanceChart').scrollIntoView();"><b><span style="font-size:20px;">&#8593;</span></b></button><br/>	    <button class="Floatbtn" onclick="getFirestoreData('refresh','')"><b><span style="font-size:20px;">&#8635;</span></b></button><br/>		 <button class="Floatbtn" onclick="getFirestoreData('live','')"><b><span style="font-size:20px;">&#8883;</span></b></button><br/>	    <button class="Floatbtn" onclick="document.getElementById(\'indices_performance_time\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	<br/>	    <button class="Floatbtn" onclick="document.getElementById(\'EquitySpurtsContainerDiv\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	<br/>	    <button class="Floatbtn" onclick="document.getElementById(\'heatMapSectorSelector\').scrollIntoView();"><b><span style="font-size:20px;">&#8595;</span></b></button>	</div> -->
 <!-- Floating Buttons Code Ends Here -->
 
