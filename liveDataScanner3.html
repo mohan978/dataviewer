@@ -379,6 +379,8 @@ width: 98%;
  <button onclick="showPerticularStocksEquityDataInTable()">GO</button>
  </span>
 <div class="spaceBetweenTables">  	<div id="perticularEquityTableContainer"></div> </div>
+<div class="spaceBetweenTables">  	<div id="breakoutStocksTableContainer"></div> </div>
+<div class="spaceBetweenTables">  	<div id="highestConsolidationBreakoutStocksTableContainer"></div> </div>
 
 
 <br><br>
@@ -396,7 +398,6 @@ width: 98%;
   <br><br>
 
 <div class="spaceBetweenTables">  	<div id="highest_ask_bid_orders_tick_wise_TableContainer"></div> </div>
-<div class="spaceBetweenTables">  	<div id="priceRangesDataTableContainer"></div> </div>
 <div class="spaceBetweenTables">  	<div id="poc_changes_timewise_TableContainer"></div> </div>
 <div class="spaceBetweenTables">  	<div id="volumeProfile_EquityTableContainer"></div> </div>
 <div class="spaceBetweenTables">  	<div id="perticularEquityTableContainer2"></div> </div>
@@ -1823,6 +1824,12 @@ async function showLiveScannerAllStocksDataInTable()
 	var theadStr = '<thead class="tableRowClass">   <tr>      '
 	+'<th>Symbol</th>'
 	 
+	+' <th>Inside_Cndl</th>'
+	+' <th>Trend_5m</th>'
+	+' <th>Rng%_5m</th>'
+	+' <th>Rng*Cndl</th>'
+	+' <th>Swings</th>'
+	
 	
 	+' <th>c%</th>'
 	+' <th>Score_1m</th>'
@@ -1930,6 +1937,34 @@ async function showLiveScannerAllStocksDataInTable()
 		var tablesStr = '<tr class="item"><td>'
 		+ symbol
 	
+		
+		if( dataObj['market_structure_1m'] != undefined )
+		{
+		//var last_swing_obj_5m = dataObj['market_structure_1m'][ dataObj['market_structure_1m'].length-1 ]
+		var last_swing_obj_5m =   dataObj['market_structure_5m'] && dataObj['market_structure_5m'].length > 0    ? dataObj['market_structure_5m'][dataObj['market_structure_5m'].length - 1]    : {}; // or provide a default object like { time: null, type: null }
+		//var last_swing_obj_5m =   dataObj['market_structure_5m'] && dataObj['market_structure_5m'].length > 1    ? dataObj['market_structure_5m'][dataObj['market_structure_5m'].length - 2]    : {}; // or provide a default object like { time: null, type: null }
+
+		
+		tablesStr += 
+		'</td><td>'
+		//+ last_swing_obj_5m['inside_candles']
+		+ ( last_swing_obj_5m['inside_candles']  ? last_swing_obj_5m['inside_candles']  : 0 )
+		
+		+'</td><td>'
+		//+ last_swing_obj_5m['trend']
+		+ ( last_swing_obj_5m['trend']  ? last_swing_obj_5m['trend']  : 'Null' )
+		
+		+'</td><td>'
+		+ ( last_swing_obj_5m['swing_high']  ? ( (last_swing_obj_5m['swing_high'] - last_swing_obj_5m['swing_low'])/last_swing_obj_5m['swing_low']*100 ).toFixed(2) : 'Null' )
+		+'</td><td>'
+		+ ( last_swing_obj_5m['swing_high']  ? ( (100-( (last_swing_obj_5m['swing_high'] - last_swing_obj_5m['swing_low'])/last_swing_obj_5m['swing_low']*100 )) * last_swing_obj_5m['inside_candles'] ) .toFixed(2) : 'Null' )
+		
+		+'</td><td>'
+		+ ( dataObj['market_structure_5m'] ? dataObj['market_structure_5m'].length  : 0  )
+		//+ ( dataObj['market_structure_5m'] ? Math.abs( percentageChange * dataObj['market_structure_5m'].length ).toFixed(2)  : 0  )
+		
+		//+'</td><td>'
+		}
 
 		if( dataObj['score_result_1m'] != undefined )
 		{
@@ -2001,7 +2036,8 @@ async function showLiveScannerAllStocksDataInTable()
 		
 		
 		+'</td><td>'
-		}	
+		}
+
 	
 		tablesStr += 
 		//+'</td><td>'
@@ -2072,6 +2108,656 @@ async function showLiveScannerAllStocksDataInTable()
 
 	
 	 document.getElementById('perticularEquityTableContainer').innerHTML = optMostActiveTablesStr;
+	 //document.getElementById('optPriceLosersTableContainer').innerHTML = optOILosersTablesStr;
+
+	
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
+	var theadStr = '<thead class="tableRowClass">   <tr>      '
+	+'<th>Symbol</th>'
+	 
+	+' <th>Inside_Cndl</th>'
+	+' <th>Trend_5m</th>'
+	+' <th>Rng%_5m</th>'
+	+' <th>Rng*Cndl</th>'
+	+' <th>Swings</th>'
+	+' <th>StartT</th>'
+	+' <th>BreakoutT</th>'
+	+' <th>BreakoutStngh</th>'
+	
+	
+	+' <th>c%</th>'
+	/*
+	+' <th>Score_1m</th>'
+	+' <th>Candles</th>'
+	//+' <th>bodyWick_1m</th>'
+	+' <th>bodyPer</th>'
+	+' <th>bullish</th>'
+	+' <th>bearish</th>'
+	//+' <th>retracement</th>'
+	//+' <th>pullback</th>'
+	
+	+' <th>bullish%</th>'
+	+' <th>bearish%</th>'
+
+	+' <th>Score_5m</th>'
+	+' <th>Candles</th>'
+	//+' <th>bodyWick_5m</th>'
+	+' <th>bodyPer</th>'
+	+' <th>bullish</th>'
+	+' <th>bearish</th>'
+	//+' <th>retracement</th>'
+	//+' <th>pullback</th>'
+	
+	+' <th>bullish%</th>'
+	+' <th>bearish%</th>'
+
+	
+	+'<th>Ratio</th>'
+	+' <th>Agrsv</th>'
+	+' <th>Near HVP</th>'
+	+' <th>Near POC</th>'
+	+' <th>HVP</th>'
+	+' <th>POC</th>'
+	+' <th>LTP</th>'
+	+' <th>TimeHVP</th>'
+	+' <th>HVP Near High</th>'
+	+' <th>HVP Near Low</th>'
+	
+	
+	+' <th>BuyChng</th>'
+	+' <th>SellChng</th>'
+	+' <th>C%_1m</th>'
+	*/
+	
+	//+'<th>Ratio%</th>   '
+	+' </tr></thead><tbody>'
+	var optMostActiveTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="breakoutStocksTableStr"><caption style="caption-side:top"> Last Breakout Stocks| '+selectedTradingDate+' | '+timestamp+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	//var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	 
+	
+	function returnDataStr2( symbol, dataObj )
+	{
+	
+		
+	
+	 
+	 var LastPrice = dataObj['LTP']
+	 var POC_Price = dataObj['POC'][0].split('-')[0]
+	 var HighestVolBar_priceRange = Number( dataObj['HighestVolBar'][0][1]['HighestVolBar']['priceRange'].split('-')[0] )
+	 var HighestVolBar_priceRange_total_ask = dataObj['HighestVolBar'][0][1]['total_ask']
+	 var HighestVolBar_priceRange_total_bid = dataObj['HighestVolBar'][0][1]['total_bid']
+	 var HighestVolBar_time =  dataObj['HighestVolBar'][0][0]
+	var LTP_near_HighestVolBar_priceRange =  Math.abs(LastPrice - HighestVolBar_priceRange) / HighestVolBar_priceRange *100
+	var LTP_near_POC =  Math.abs(LastPrice - POC_Price) / POC_Price *100
+	
+	var day_high = dataObj['day_high']
+	var day_low = dataObj['day_low']
+	var HighestVolBar_candle_high = Number( dataObj['HighestVolBar'][0][1]['currentCandle'][2] )
+	var HighestVolBar_candle_low = Number( dataObj['HighestVolBar'][0][1]['currentCandle'][3] )
+	var HighestVolBar_near_day_high =  Math.abs(day_high - HighestVolBar_candle_high) / HighestVolBar_candle_high *100
+	var HighestVolBar_near_day_low =  Math.abs(day_low - HighestVolBar_candle_low) / HighestVolBar_candle_low *100
+	
+	var pChange_total_1m = 0
+	if( dataObj['pChange_total_1m'] !=undefined )
+		pChange_total_1m = dataObj['pChange_total_1m'].toFixed(2)
+	
+	
+	
+	
+	/*
+	 var DayHigh = symbolArray['dayHigh'] 
+	 var DayLow = symbolArray['dayLow']
+	  var DayRange =( ( (DayHigh - DayLow) / DayLow) *100).toFixed(2)
+	  
+    var near_high_pct = (1 - (DayHigh - LastPrice) / (DayHigh - DayLow)) * 100 
+    var near_low_pct = (1 - (LastPrice - DayLow) / (DayHigh - DayLow)) * 100
+	  */
+		var whoIsMoreAggressive = ''
+		var ratioPercentage = 0
+		if( dataObj['total_ask'] >= dataObj['total_bid'] )
+		{
+			//var percentage = (dataObj['marketDeptOrderBook']['totalBuyQuantity']-dataObj['marketDeptOrderBook']['totalSellQuantity']) / (dataObj['marketDeptOrderBook']['totalBuyQuantity']+dataObj['marketDeptOrderBook']['totalSellQuantity'])
+			whoIsMoreAggressive = 'Buy' 
+			//ratioPercentage = ((dataObj['total_ask']  - dataObj['total_bid'])/dataObj['total_bid'] )*100
+			ratioPercentage = dataObj['total_ask'] / dataObj['total_bid']
+		}
+		else if( dataObj['total_ask'] < dataObj['total_bid'] )
+		{
+			whoIsMoreAggressive = 'Sell'
+			ratioPercentage = dataObj['total_bid'] / dataObj['total_ask']
+		}
+		
+		var percentageChange = ( ( ( dataObj['LTP'] - dataObj['day_open'] ) / dataObj['day_open'] ) * 100 )
+
+		var tablesStr = ''
+		//var tablesStr = '<tr class="item"><td>'
+		//+ symbol
+	
+		
+		if( dataObj['market_structure_5m'] && dataObj['market_structure_5m'].length > 1 )
+		{
+		//var last_swing_obj_5m = dataObj['market_structure_1m'][ dataObj['market_structure_1m'].length-1 ]
+		//var last_swing_obj_5m =   dataObj['market_structure_5m'] && dataObj['market_structure_5m'].length > 0    ? dataObj['market_structure_5m'][dataObj['market_structure_5m'].length - 1]    : {}; // or provide a default object like { time: null, type: null }
+		var last_swing_obj_5m =   dataObj['market_structure_5m'] && dataObj['market_structure_5m'].length > 1  ? dataObj['market_structure_5m'][dataObj['market_structure_5m'].length - 2]    : {}; // or provide a default object like { time: null, type: null }
+		
+		//console.log( symbol, last_swing_obj_5m )
+
+		
+		tablesStr += '<tr class="item"><td>'
+		+ symbol
+		+'</td><td>'
+		//+ last_swing_obj_5m['inside_candles']
+		+ ( last_swing_obj_5m['inside_candles']  ? last_swing_obj_5m['inside_candles']  : 0 )
+		
+		+'</td><td>'
+		//+ last_swing_obj_5m['trend']
+		+ ( last_swing_obj_5m['trend']  ? last_swing_obj_5m['trend']  : 'Null' )
+		
+		+'</td><td>'
+		+ ( last_swing_obj_5m['swing_high']  ? ( (last_swing_obj_5m['swing_high'] - last_swing_obj_5m['swing_low'])/last_swing_obj_5m['swing_low']*100 ).toFixed(2) : 'Null' )
+		+'</td><td>'
+		+ ( last_swing_obj_5m['swing_high']  ? ( (100-( (last_swing_obj_5m['swing_high'] - last_swing_obj_5m['swing_low'])/last_swing_obj_5m['swing_low']*100 )) * last_swing_obj_5m['inside_candles'] ) .toFixed(2) : 'Null' )
+		
+		
+		+'</td><td>'
+		+ ( dataObj['market_structure_5m'] ? dataObj['market_structure_5m'].length  : 0  )
+		 
+		+'</td><td>'
+		+ ( last_swing_obj_5m['start_candle'] ? last_swing_obj_5m ['start_candle'][0]  : ''  )
+	
+		+'</td><td>'
+		+ ( last_swing_obj_5m['day_close_candle'] ? last_swing_obj_5m ['day_close_candle'][0]  : ''  )
+	
+		+'</td><td>'
+		+ ( last_swing_obj_5m['day_close_candle'] ?( (  Math.abs(last_swing_obj_5m ['day_close_candle'][4] - last_swing_obj_5m ['day_close_candle'][1]) / (last_swing_obj_5m ['day_close_candle'][2] - last_swing_obj_5m ['day_close_candle'][3]))*100 ) .toFixed(2)    : ''  )
+	
+		+'</td><td>'
+		//+ dataObj['score_result_1m']['score']
+		+ percentageChange.toFixed(2)
+		 
+		//+'</td><td>'
+		+'</td></tr>'
+		}
+
+		if( false && dataObj['score_result_1m'] != undefined )
+		{
+		tablesStr += 
+		'</td><td>'
+		//+ dataObj['score_result_1m']['score']
+		+ percentageChange.toFixed(2)
+		 
+		+'</td><td>'
+		//+ dataObj['score_result_1m']['score']
+		//+ ( dataObj['score_result_1m']['num_consec'] * dataObj['score_result_1m']['body_per'] ).toFixed(2)
+		//+ Math.abs( percentageChange * dataObj['score_result_1m']['num_consec'] * dataObj['score_result_1m']['body_per']  ).toFixed(2)
+		+ Math.abs( percentageChange * dataObj['score_result_1m']['num_consec'] ).toFixed(2)
+		
+		+'</td><td>'
+		+ dataObj['score_result_1m']['num_consec']
+		
+		//+'</td><td>'
+		//+ dataObj['score_result_1m']['body_wick']
+		
+		+'</td><td>'
+		+ dataObj['score_result_1m']['body_per']
+		
+		+'</td><td>'
+		//+ dataObj['score_result_1m']['analyzed_candles']['max_consecutive_bullish']
+		+ dataObj['score_result_1m']['analyzed_candles']['max_valid_consecutive_bullish']
+		+'</td><td>'
+		+ dataObj['score_result_1m']['analyzed_candles']['max_valid_consecutive_bearish']
+		
+		+'</td><td>'
+		//+ dataObj['score_result_1m']['retracement']
+		+Math.abs( percentageChange * dataObj['score_result_1m']['analyzed_candles']['max_valid_consecutive_bullish'] ).toFixed(2)
+		
+		+'</td><td>'
+		//+ dataObj['score_result_1m']['pullback_depth']
+		+Math.abs( percentageChange * dataObj['score_result_1m']['analyzed_candles']['max_valid_consecutive_bearish'] ).toFixed(2)
+		
+		
+		
+		+'</td><td>'
+		//+ dataObj['score_result_5m']['score']
+		//+ ( dataObj['score_result_5m']['num_consec'] * dataObj['score_result_5m']['body_per'] ).toFixed(2)
+		//+Math.abs( percentageChange  * dataObj['score_result_5m']['num_consec'] * dataObj['score_result_5m']['body_per']   ).toFixed(2)
+		+Math.abs( percentageChange  * dataObj['score_result_5m']['num_consec'] ).toFixed(2)
+		
+		
+		+'</td><td>'
+		+ dataObj['score_result_5m']['num_consec']
+		
+		//+'</td><td>'
+		//+ dataObj['score_result_5m']['body_wick']
+		
+		+'</td><td>'
+		+ dataObj['score_result_5m']['body_per']
+		
+		+'</td><td>'
+		+ dataObj['score_result_5m']['analyzed_candles']['max_valid_consecutive_bullish']
+		+'</td><td>'
+		+ dataObj['score_result_5m']['analyzed_candles']['max_valid_consecutive_bearish']
+		
+		
+		+'</td><td>'
+		//+ dataObj['score_result_5m']['retracement']
+		+Math.abs( percentageChange * dataObj['score_result_5m']['analyzed_candles']['max_valid_consecutive_bullish'] ).toFixed(2)
+		
+		+'</td><td>'
+		//+ dataObj['score_result_5m']['pullback_depth']
+		+Math.abs( percentageChange  * dataObj['score_result_5m']['analyzed_candles']['max_valid_consecutive_bearish'] ).toFixed(2)
+		
+		
+		+'</td><td>'
+		}
+
+			
+		/*
+		tablesStr += 
+		//+'</td><td>'
+		+ratioPercentage.toFixed(2)
+		+'</td><td>'
+		+ whoIsMoreAggressive 
+		+'</td><td>'
+		+ LTP_near_HighestVolBar_priceRange.toFixed(3)
+		+'</td><td>'
+		+ LTP_near_POC.toFixed(3)
+		+'</td><td>'
+		+ HighestVolBar_priceRange
+		+'</td><td>'
+		+ POC_Price
+		+'</td><td>'
+		+ LastPrice
+		+'</td><td>'
+		+ HighestVolBar_time
+		+'</td><td>'
+		+ HighestVolBar_near_day_high.toFixed(3)
+		+'</td><td>'
+		+ HighestVolBar_near_day_low.toFixed(3)
+		+'</td><td>'
+		+ ( dataObj['total_ask'] - HighestVolBar_priceRange_total_ask )
+		+'</td><td>'
+		+ ( dataObj['total_bid'] - HighestVolBar_priceRange_total_bid )
+		
+		+'</td><td>'
+		+ ( pChange_total_1m )
+		*/
+		
+				
+		/*
+		+'</td><td>'
+		+ dataObj['marketDeptOrderBook']['totalBuyQuantity'] 
+		+'</td><td>'
+		+ dataObj['marketDeptOrderBook']['totalSellQuantity']
+		+'</td><td>'
+		//+ dataObj['marketDeptOrderBook']['totalBuyQuantity'] + ' (' +(dataObj['marketDeptOrderBook']['totalBuyQuantity'] / (dataObj['marketDeptOrderBook']['totalBuyQuantity'] + dataObj['marketDeptOrderBook']['totalSellQuantity'] ) *100 ).toFixed(2) + ')' 
+		+ (dataObj['marketDeptOrderBook']['totalBuyQuantity'] / (dataObj['marketDeptOrderBook']['totalBuyQuantity'] + dataObj['marketDeptOrderBook']['totalSellQuantity'] ) *100 ).toFixed(2) 
+		+'</td><td>'
+		//+ dataObj['marketDeptOrderBook']['totalSellQuantity'] + ' (' +(dataObj['marketDeptOrderBook']['totalSellQuantity'] / (dataObj['marketDeptOrderBook']['totalBuyQuantity'] + dataObj['marketDeptOrderBook']['totalSellQuantity'] ) *100 ).toFixed(2) + ')' 
+		+ (dataObj['marketDeptOrderBook']['totalSellQuantity'] / (dataObj['marketDeptOrderBook']['totalBuyQuantity'] + dataObj['marketDeptOrderBook']['totalSellQuantity'] ) *100 ).toFixed(2)
+		//+'</td><td>'
+		*/
+		//+ ratioPercentage.toFixed(2)
+		//+'</td></tr>'
+		//console.log( "tablesStr", tablesStr )
+		return tablesStr;
+	}
+
+	for( var i=0; i< Object.keys( candleWiseDataObj ).length ; i++ ) {
+	//for( var i=0; i< 50 ; i++ ) {
+	//var symbol = symbolStr.split('_')[0]
+	var symbol = Object.keys( candleWiseDataObj )[i]
+
+	{
+
+		var dataObj = candleWiseDataObj [symbol]
+	
+		optMostActiveTablesStr +=	returnDataStr2( symbol, dataObj )
+
+	}
+	}
+	
+	optMostActiveTablesStr +=' </tbody> </table>    </div>  </div>'
+	//optOILosersTablesStr +=' </tbody> </table>    </div>  </div>'
+
+
+	
+	 document.getElementById('breakoutStocksTableContainer').innerHTML = optMostActiveTablesStr;
+	 //document.getElementById('optPriceLosersTableContainer').innerHTML = optOILosersTablesStr;
+
+	
+	
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
+	var theadStr = '<thead class="tableRowClass">   <tr>      '
+	+'<th>Symbol</th>'
+	 
+	+' <th>Inside_Cndl</th>'
+	+' <th>Trend_5m</th>'
+	+' <th>Rng%_5m</th>'
+	+' <th>Rng*Cndl</th>'
+	+' <th>Swings</th>'
+	+' <th>StartT</th>'
+	+' <th>BreakoutT</th>'
+	+' <th>BreakoutStngh</th>'
+	
+	+' <th>c%</th>'
+	/*
+	+' <th>Score_1m</th>'
+	+' <th>Candles</th>'
+	//+' <th>bodyWick_1m</th>'
+	+' <th>bodyPer</th>'
+	+' <th>bullish</th>'
+	+' <th>bearish</th>'
+	//+' <th>retracement</th>'
+	//+' <th>pullback</th>'
+	
+	+' <th>bullish%</th>'
+	+' <th>bearish%</th>'
+
+	+' <th>Score_5m</th>'
+	+' <th>Candles</th>'
+	//+' <th>bodyWick_5m</th>'
+	+' <th>bodyPer</th>'
+	+' <th>bullish</th>'
+	+' <th>bearish</th>'
+	//+' <th>retracement</th>'
+	//+' <th>pullback</th>'
+	
+	+' <th>bullish%</th>'
+	+' <th>bearish%</th>'
+
+	
+	+'<th>Ratio</th>'
+	+' <th>Agrsv</th>'
+	+' <th>Near HVP</th>'
+	+' <th>Near POC</th>'
+	+' <th>HVP</th>'
+	+' <th>POC</th>'
+	+' <th>LTP</th>'
+	+' <th>TimeHVP</th>'
+	+' <th>HVP Near High</th>'
+	+' <th>HVP Near Low</th>'
+	
+	
+	+' <th>BuyChng</th>'
+	+' <th>SellChng</th>'
+	+' <th>C%_1m</th>'
+	*/
+	
+	//+'<th>Ratio%</th>   '
+	+' </tr></thead><tbody>'
+	var optMostActiveTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="highestConsolidationBreakoutStocksTableStr"><caption style="caption-side:top"> Highest Consolidation Breakout Stocks| '+selectedTradingDate+' | '+timestamp+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	//var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	 
+	
+	function returnDataStr3( symbol, dataObj )
+	{
+	
+		
+	
+	 
+	 var LastPrice = dataObj['LTP']
+	 var POC_Price = dataObj['POC'][0].split('-')[0]
+	 var HighestVolBar_priceRange = Number( dataObj['HighestVolBar'][0][1]['HighestVolBar']['priceRange'].split('-')[0] )
+	 var HighestVolBar_priceRange_total_ask = dataObj['HighestVolBar'][0][1]['total_ask']
+	 var HighestVolBar_priceRange_total_bid = dataObj['HighestVolBar'][0][1]['total_bid']
+	 var HighestVolBar_time =  dataObj['HighestVolBar'][0][0]
+	var LTP_near_HighestVolBar_priceRange =  Math.abs(LastPrice - HighestVolBar_priceRange) / HighestVolBar_priceRange *100
+	var LTP_near_POC =  Math.abs(LastPrice - POC_Price) / POC_Price *100
+	
+	var day_high = dataObj['day_high']
+	var day_low = dataObj['day_low']
+	var HighestVolBar_candle_high = Number( dataObj['HighestVolBar'][0][1]['currentCandle'][2] )
+	var HighestVolBar_candle_low = Number( dataObj['HighestVolBar'][0][1]['currentCandle'][3] )
+	var HighestVolBar_near_day_high =  Math.abs(day_high - HighestVolBar_candle_high) / HighestVolBar_candle_high *100
+	var HighestVolBar_near_day_low =  Math.abs(day_low - HighestVolBar_candle_low) / HighestVolBar_candle_low *100
+	
+	var pChange_total_1m = 0
+	if( dataObj['pChange_total_1m'] !=undefined )
+		pChange_total_1m = dataObj['pChange_total_1m'].toFixed(2)
+	
+	
+	
+	
+	/*
+	 var DayHigh = symbolArray['dayHigh'] 
+	 var DayLow = symbolArray['dayLow']
+	  var DayRange =( ( (DayHigh - DayLow) / DayLow) *100).toFixed(2)
+	  
+    var near_high_pct = (1 - (DayHigh - LastPrice) / (DayHigh - DayLow)) * 100 
+    var near_low_pct = (1 - (LastPrice - DayLow) / (DayHigh - DayLow)) * 100
+	  */
+		var whoIsMoreAggressive = ''
+		var ratioPercentage = 0
+		if( dataObj['total_ask'] >= dataObj['total_bid'] )
+		{
+			//var percentage = (dataObj['marketDeptOrderBook']['totalBuyQuantity']-dataObj['marketDeptOrderBook']['totalSellQuantity']) / (dataObj['marketDeptOrderBook']['totalBuyQuantity']+dataObj['marketDeptOrderBook']['totalSellQuantity'])
+			whoIsMoreAggressive = 'Buy' 
+			//ratioPercentage = ((dataObj['total_ask']  - dataObj['total_bid'])/dataObj['total_bid'] )*100
+			ratioPercentage = dataObj['total_ask'] / dataObj['total_bid']
+		}
+		else if( dataObj['total_ask'] < dataObj['total_bid'] )
+		{
+			whoIsMoreAggressive = 'Sell'
+			ratioPercentage = dataObj['total_bid'] / dataObj['total_ask']
+		}
+		
+		var percentageChange = ( ( ( dataObj['LTP'] - dataObj['day_open'] ) / dataObj['day_open'] ) * 100 )
+
+
+		
+		var tablesStr = ''
+		//var tablesStr = '<tr class="item"><td>'
+		//+ symbol
+	
+		
+		if( dataObj['market_structure_5m'] && dataObj['market_structure_5m'].length > 1 )
+		{
+		var market_structure_selected_timeFrame_array = dataObj['market_structure_5m']
+		var highestConsolidation_index = 0
+		var highestConsolidation_candles = 0
+		
+		for( var i=0;i<=market_structure_selected_timeFrame_array.length-2;i++)
+		{
+			if( market_structure_selected_timeFrame_array[i]['inside_candles'] > highestConsolidation_candles )
+			{
+				highestConsolidation_candles = market_structure_selected_timeFrame_array[i]['inside_candles'] 
+				highestConsolidation_index = i
+			}
+		}
+		
+		
+		//var last_swing_obj_5m = dataObj['market_structure_1m'][ dataObj['market_structure_1m'].length-1 ]
+		//var last_swing_obj_5m =   dataObj['market_structure_5m'] && dataObj['market_structure_5m'].length > 0    ? dataObj['market_structure_5m'][dataObj['market_structure_5m'].length - 1]    : {}; // or provide a default object like { time: null, type: null }
+		//var last_swing_obj_5m =   dataObj['market_structure_5m'] && dataObj['market_structure_5m'].length > 1  ? dataObj['market_structure_5m'][dataObj['market_structure_5m'].length - 2]    : {}; // or provide a default object like { time: null, type: null }
+		var last_swing_obj_5m =   market_structure_selected_timeFrame_array && market_structure_selected_timeFrame_array.length > 1  ? market_structure_selected_timeFrame_array[ highestConsolidation_index ]   : {}; // or provide a default object like { time: null, type: null }
+		
+		//console.log( symbol, last_swing_obj_5m )
+
+		
+		tablesStr += '<tr class="item"><td>'
+		+ symbol
+		+'</td><td>'
+		//+ last_swing_obj_5m['inside_candles']
+		+ ( last_swing_obj_5m['inside_candles']  ? last_swing_obj_5m['inside_candles']  : 0 )
+		
+		+'</td><td>'
+		//+ last_swing_obj_5m['trend']
+		+ ( last_swing_obj_5m['trend']  ? last_swing_obj_5m['trend']  : 'Null' )
+		
+		+'</td><td>'
+		+ ( last_swing_obj_5m['swing_high']  ? ( (last_swing_obj_5m['swing_high'] - last_swing_obj_5m['swing_low'])/last_swing_obj_5m['swing_low']*100 ).toFixed(2) : 'Null' )
+		+'</td><td>'
+		+ ( last_swing_obj_5m['swing_high']  ? ( (100-( (last_swing_obj_5m['swing_high'] - last_swing_obj_5m['swing_low'])/last_swing_obj_5m['swing_low']*100 )) * last_swing_obj_5m['inside_candles'] ) .toFixed(2) : 'Null' )
+		
+		+'</td><td>'
+		+ ( dataObj['market_structure_5m'] ? dataObj['market_structure_5m'].length  : 0  )
+		//+ ( dataObj['market_structure_5m'] ? Math.abs( percentageChange * dataObj['market_structure_5m'].length ).toFixed(2)  : 0  )
+		
+		+'</td><td>'
+		+ ( last_swing_obj_5m['start_candle'] ? last_swing_obj_5m['start_candle'][0]  : ''  )
+	
+		+'</td><td>'
+		+ ( last_swing_obj_5m['day_close_candle'] ? last_swing_obj_5m ['day_close_candle'][0]  : ''  )
+		
+		+'</td><td>'
+		+ ( last_swing_obj_5m['day_close_candle'] ?( (  Math.abs(last_swing_obj_5m ['day_close_candle'][4] - last_swing_obj_5m ['day_close_candle'][1]) / (last_swing_obj_5m ['day_close_candle'][2] - last_swing_obj_5m ['day_close_candle'][3]))*100 ) .toFixed(2)    : ''  )
+	
+	
+		+'</td><td>'
+		//+ dataObj['score_result_1m']['score']
+		+ percentageChange.toFixed(2)
+		 
+		//+'</td><td>'
+		+'</td></tr>'
+		}
+
+		if( false && dataObj['score_result_1m'] != undefined )
+		{
+		tablesStr += 
+		'</td><td>'
+		//+ dataObj['score_result_1m']['score']
+		+ percentageChange.toFixed(2)
+		 
+		+'</td><td>'
+		//+ dataObj['score_result_1m']['score']
+		//+ ( dataObj['score_result_1m']['num_consec'] * dataObj['score_result_1m']['body_per'] ).toFixed(2)
+		//+ Math.abs( percentageChange * dataObj['score_result_1m']['num_consec'] * dataObj['score_result_1m']['body_per']  ).toFixed(2)
+		+ Math.abs( percentageChange * dataObj['score_result_1m']['num_consec'] ).toFixed(2)
+		
+		+'</td><td>'
+		+ dataObj['score_result_1m']['num_consec']
+		
+		//+'</td><td>'
+		//+ dataObj['score_result_1m']['body_wick']
+		
+		+'</td><td>'
+		+ dataObj['score_result_1m']['body_per']
+		
+		+'</td><td>'
+		//+ dataObj['score_result_1m']['analyzed_candles']['max_consecutive_bullish']
+		+ dataObj['score_result_1m']['analyzed_candles']['max_valid_consecutive_bullish']
+		+'</td><td>'
+		+ dataObj['score_result_1m']['analyzed_candles']['max_valid_consecutive_bearish']
+		
+		+'</td><td>'
+		//+ dataObj['score_result_1m']['retracement']
+		+Math.abs( percentageChange * dataObj['score_result_1m']['analyzed_candles']['max_valid_consecutive_bullish'] ).toFixed(2)
+		
+		+'</td><td>'
+		//+ dataObj['score_result_1m']['pullback_depth']
+		+Math.abs( percentageChange * dataObj['score_result_1m']['analyzed_candles']['max_valid_consecutive_bearish'] ).toFixed(2)
+		
+		
+		
+		+'</td><td>'
+		//+ dataObj['score_result_5m']['score']
+		//+ ( dataObj['score_result_5m']['num_consec'] * dataObj['score_result_5m']['body_per'] ).toFixed(2)
+		//+Math.abs( percentageChange  * dataObj['score_result_5m']['num_consec'] * dataObj['score_result_5m']['body_per']   ).toFixed(2)
+		+Math.abs( percentageChange  * dataObj['score_result_5m']['num_consec'] ).toFixed(2)
+		
+		
+		+'</td><td>'
+		+ dataObj['score_result_5m']['num_consec']
+		
+		//+'</td><td>'
+		//+ dataObj['score_result_5m']['body_wick']
+		
+		+'</td><td>'
+		+ dataObj['score_result_5m']['body_per']
+		
+		+'</td><td>'
+		+ dataObj['score_result_5m']['analyzed_candles']['max_valid_consecutive_bullish']
+		+'</td><td>'
+		+ dataObj['score_result_5m']['analyzed_candles']['max_valid_consecutive_bearish']
+		
+		
+		+'</td><td>'
+		//+ dataObj['score_result_5m']['retracement']
+		+Math.abs( percentageChange * dataObj['score_result_5m']['analyzed_candles']['max_valid_consecutive_bullish'] ).toFixed(2)
+		
+		+'</td><td>'
+		//+ dataObj['score_result_5m']['pullback_depth']
+		+Math.abs( percentageChange  * dataObj['score_result_5m']['analyzed_candles']['max_valid_consecutive_bearish'] ).toFixed(2)
+		
+		
+		+'</td><td>'
+		}
+
+			
+		/*
+		tablesStr += 
+		//+'</td><td>'
+		+ratioPercentage.toFixed(2)
+		+'</td><td>'
+		+ whoIsMoreAggressive 
+		+'</td><td>'
+		+ LTP_near_HighestVolBar_priceRange.toFixed(3)
+		+'</td><td>'
+		+ LTP_near_POC.toFixed(3)
+		+'</td><td>'
+		+ HighestVolBar_priceRange
+		+'</td><td>'
+		+ POC_Price
+		+'</td><td>'
+		+ LastPrice
+		+'</td><td>'
+		+ HighestVolBar_time
+		+'</td><td>'
+		+ HighestVolBar_near_day_high.toFixed(3)
+		+'</td><td>'
+		+ HighestVolBar_near_day_low.toFixed(3)
+		+'</td><td>'
+		+ ( dataObj['total_ask'] - HighestVolBar_priceRange_total_ask )
+		+'</td><td>'
+		+ ( dataObj['total_bid'] - HighestVolBar_priceRange_total_bid )
+		
+		+'</td><td>'
+		+ ( pChange_total_1m )
+		*/
+		
+				
+		/*
+		+'</td><td>'
+		+ dataObj['marketDeptOrderBook']['totalBuyQuantity'] 
+		+'</td><td>'
+		+ dataObj['marketDeptOrderBook']['totalSellQuantity']
+		+'</td><td>'
+		//+ dataObj['marketDeptOrderBook']['totalBuyQuantity'] + ' (' +(dataObj['marketDeptOrderBook']['totalBuyQuantity'] / (dataObj['marketDeptOrderBook']['totalBuyQuantity'] + dataObj['marketDeptOrderBook']['totalSellQuantity'] ) *100 ).toFixed(2) + ')' 
+		+ (dataObj['marketDeptOrderBook']['totalBuyQuantity'] / (dataObj['marketDeptOrderBook']['totalBuyQuantity'] + dataObj['marketDeptOrderBook']['totalSellQuantity'] ) *100 ).toFixed(2) 
+		+'</td><td>'
+		//+ dataObj['marketDeptOrderBook']['totalSellQuantity'] + ' (' +(dataObj['marketDeptOrderBook']['totalSellQuantity'] / (dataObj['marketDeptOrderBook']['totalBuyQuantity'] + dataObj['marketDeptOrderBook']['totalSellQuantity'] ) *100 ).toFixed(2) + ')' 
+		+ (dataObj['marketDeptOrderBook']['totalSellQuantity'] / (dataObj['marketDeptOrderBook']['totalBuyQuantity'] + dataObj['marketDeptOrderBook']['totalSellQuantity'] ) *100 ).toFixed(2)
+		//+'</td><td>'
+		*/
+		//+ ratioPercentage.toFixed(2)
+		//+'</td></tr>'
+		//console.log( "tablesStr", tablesStr )
+		return tablesStr;
+	}
+
+	for( var i=0; i< Object.keys( candleWiseDataObj ).length ; i++ ) {
+	//for( var i=0; i< 50 ; i++ ) {
+	//var symbol = symbolStr.split('_')[0]
+	var symbol = Object.keys( candleWiseDataObj )[i]
+
+	{
+
+		var dataObj = candleWiseDataObj [symbol]
+	
+		optMostActiveTablesStr +=	returnDataStr3( symbol, dataObj )
+
+	}
+	}
+	
+	optMostActiveTablesStr +=' </tbody> </table>    </div>  </div>'
+	//optOILosersTablesStr +=' </tbody> </table>    </div>  </div>'
+
+
+	
+	 document.getElementById('highestConsolidationBreakoutStocksTableContainer').innerHTML = optMostActiveTablesStr;
 	 //document.getElementById('optPriceLosersTableContainer').innerHTML = optOILosersTablesStr;
 
 	
@@ -2368,8 +3054,7 @@ function formatDateTime(timestamp) {
 	var previous_tick_price = 0
 	var currentDayData = candleWiseDataObj
 	//console.log("currentDayData", currentDayData)
-	var price_ranges_data_obj = {}
-
+	
 	var highest_vol_price_arr = []
 	var candlewise_highest_vol_price_obj = {}
 	var candlewise_highest_vol_price_obj2 = {}
@@ -2458,13 +3143,6 @@ function formatDateTime(timestamp) {
 					var priceRange = previous_tick_price +'-'+ priceLow 
 					
 					var tick_difference = Math.abs( ( Number( priceRange.split('-')[1] ) - Number( priceRange.split('-')[0] ) ).toFixed(2) )
-					 
-					price_ranges_data_obj [ tick_difference+'_'+candleTime+'_'+tick_id ] = {
-						'candleTime' :candleTime,
-						'ask' :ask,
-						'bid' :bid,
-						'priceRange' :priceRange 
-					}
 					 
 					if(single_candle_volume_profile_price_obj[priceRange] ==undefined )
 					{
@@ -3096,67 +3774,6 @@ console.log(  "sorted_total_volume_profile_price_obj", sorted_total_volume_profi
 	 document.getElementById('poc_changes_timewise_TableContainer').innerHTML = tableStr;
 	 //document.getElementById('allSpurtsUnderlyingsColumnsContainer').innerHTML += tablesStrForNegative;
 	 
-	 
-	 
-	 
-	const sortedEntries = Object.entries(price_ranges_data_obj).sort((a, b) => {
-	  const aNum = parseFloat(a[0].split('_')[0]);
-	  const bNum = parseFloat(b[0].split('_')[0]);
-	  return bNum - aNum; // reverse order
-	});
-
-	//const sortedData = Object.fromEntries(sortedEntries);
-	price_ranges_data_obj = Object.fromEntries(sortedEntries);
-	//console.log(sortedData);
-	
-	var theadStr = '<thead class="tableRowClass">   <tr>      '
-	+'<th>TickDiff</th>'
-	+'<th>Time</th>'	//ask
-	+'<th>Range</th>' //bid
-	+'<th>Ask</th>' //bid
-	+'<th>Bid</th>' //bid
-	//+' <th>Data</th>'
-	
-	+' </tr></thead><tbody>'
-	var tableStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="priceRangesDataTableStr2"><caption style="caption-side:top"> Price Ranges | '+selectedEquitySymbol+' | '+selectedTradingDate+' | '+'</caption>'+theadStr 
-	//var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
-	 
-	 var temp_counter = 0
-	for ( var priceRangeStr in price_ranges_data_obj ) {
-	
-	if( temp_counter==50)
-	{break}
-	
-	var dataObj = price_ranges_data_obj[priceRangeStr]
-	var priceRange = dataObj[ 'priceRange' ]
-	var tick_difference = Number( ( Number( priceRange.split('-')[1] ) - Number( priceRange.split('-')[0] ) ).toFixed(2) )
-					
-	
-	
-	tableStr += '<tr class="item"><td>'
-		//+ timeStampPrevious1+'-'+timeStamp
-		+ tick_difference
-		+'</td><td>'
-		+ dataObj['candleTime']
-		+'</td><td>'
-		+ dataObj['priceRange']
-		+'</td><td>'
-		+ dataObj['ask']
-		+'</td><td>'
-		+ dataObj['bid']
-		//+ timeStampOfData
-		+'</td></tr>'
-		
-		temp_counter++
-	}
-	
-	tableStr +=' </tbody> </table>    </div>  </div>'
-	//optOILosersTablesStr +=' </tbody> </table>    </div>  </div>'
-	
-	 document.getElementById('priceRangesDataTableContainer').innerHTML = tableStr;
-	 //document.getElementById('allSpurtsUnderlyingsColumnsContainer').innerHTML += tablesStrForNegative;
-	 
-	
 	
 	 await addEventListnerInTables()
 }	//	show_spurts_in_oi_underlyings_Data() Function ENDS HERE
