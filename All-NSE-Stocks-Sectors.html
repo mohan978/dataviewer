@@ -1,12 +1,12 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
-  <title>Firebase Stock Viewer</title>
+  <title>Sector Stocks Performance</title>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
-<body style="font-family: Arial; padding: 20px; background: #f4f4f4;">
-  <h3>Paste JSON Array to send data</h3>
+<body style="font-family: Arial; padding: 6px; background: #f4f4f4;">
+  <ph2>Paste JSON Array</p>
   <textarea id="liveData" rows="5" cols="100" placeholder="Paste JSON array with Symbol, LTP, ChangePercent, totalMarketCap"></textarea><br><br>
   <button onclick="sendAndShow()">Send to Firebase & Show</button>
   <button onclick="loadLatestFromFirebase()">📥 Load Latest from Firebase & Show</button>
@@ -15,12 +15,16 @@
   <hr>
   <div id="controls" style="margin-bottom: 20px; display: none;">
     <input type="text" id="search" placeholder="Search Symbol or Group..." style="padding: 5px; margin-right: 10px;">
-    <select id="groupSelect"></select> Sellect Group to See Perfornmance
-    <button id="downloadBtn" style="margin-left: 20px;">Download Excel</button>
+    <select id="groupSelect"></select>
+    <select id="averageType" style="margin-left: 10px;">
+      <option value="weighted">Simple Average</option>
+      <option value="simple">Weighted Average</option>
+    </select>
+    <button id="downloadBtn" style="margin-left: 20px;" display: none;">Download Excel</button>
+  </div>
   </div>
 
   <div id="performance"></div>
-<br>
   <div id="stocks"></div>
 
   <script>
@@ -36,8 +40,7 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-
-    const stockInfo =[
+  const stockInfo =[
   {
     "Symbol": "CEATLTD",
     "Macro": "Consumer Discretionary",
@@ -14192,26 +14195,40 @@
       loadFromFirebase(monthFormatted, dateFormatted, time);
     }
 
-    function loadLatestFromFirebase() {
-      const now = new Date();
-      const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-      const day = String(now.getDate()).padStart(2, '0');
-      const monthName = months[now.getMonth()];
-      const year = now.getFullYear();
-      const dateFormatted = `${day} ${monthName} ${year}`;
-      const monthFormatted = `${monthName} ${year}`;
+async function loadLatestFromFirebase() {
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const now = new Date();
+  const monthName = months[now.getMonth()];
+  const year = now.getFullYear();
+  const monthFormatted = `${monthName} ${year}`;
 
-      db.ref(`stocks/${monthFormatted}/${dateFormatted}`).limitToLast(1).once("value", snapshot => {
-        const val = snapshot.val();
-        if (!val) {
-          document.getElementById("status").textContent = "❌ No data found in Firebase";
-          return;
-        }
-        const latestTime = Object.keys(val)[0];
-        loadFromFirebase(monthFormatted, dateFormatted, latestTime);
-        document.getElementById("status").textContent = `✅ Loaded from Firebase: ${monthFormatted}/${dateFormatted}/${latestTime}`;
-      });
+  try {
+    const monthSnap = await db.ref(`stocks/${monthFormatted}`).once('value');
+    const dateKeys = Object.keys(monthSnap.val() || {});
+    if (dateKeys.length === 0) {
+      alert("⚠️ No data found in Firebase for this month");
+      return;
     }
+
+    const latestDate = dateKeys.sort().pop(); // e.g. "30 Jun 2025"
+    const timeSnap = await db.ref(`stocks/${monthFormatted}/${latestDate}`).once('value');
+    const timeKeys = Object.keys(timeSnap.val() || {});
+    const latestTime = timeKeys.sort().pop(); // e.g. "11-44-23 AM"
+
+    if (!latestTime) {
+      alert("⚠️ No time entries found for latest date in Firebase");
+      return;
+    }
+
+    // ✅ Load most recent available data
+    console.log("✅ Loading latest Firebase data:", monthFormatted, latestDate, latestTime);
+    loadFromFirebase(monthFormatted, latestDate, latestTime);
+  } catch (err) {
+    console.error("❌ Firebase load error", err);
+    alert("❌ Error loading data from Firebase");
+  }
+}
+
 
     function loadFromFirebase(month, date, time) {
       db.ref(`stocks/${month}/${date}/${time}`).once("value", snapshot => {
@@ -14260,6 +14277,7 @@
 
       document.getElementById("search").addEventListener("input", render);
       groupSelect.addEventListener("change", render);
+      document.getElementById("averageType").addEventListener("change", render);
       render();
     }
 
@@ -14273,6 +14291,7 @@
 
     function render() {
       const groupKey = document.getElementById("groupSelect").value;
+      const averageType = document.getElementById("averageType").value;
       const data = getFiltered();
       const grouped = {};
 
@@ -14283,7 +14302,7 @@
       });
 
       const perfDiv = document.getElementById("performance");
-      perfDiv.innerHTML = `<h3>${groupKey} Performance (Weighted)</h3><p>Click on Sector to jump to stocks and Click on Stocks Header to copy stocks for tradingView</p>`;
+      perfDiv.innerHTML = `<h3>${groupKey} Performance (${averageType === 'weighted' ? 'Weighted' : 'Simple'} Average)</h3>`;
       const perfBoxContainer = document.createElement("div");
       perfBoxContainer.style.display = "flex";
       perfBoxContainer.style.flexWrap = "wrap";
@@ -14291,11 +14310,16 @@
       perfBoxContainer.style.marginBottom = "20px";
 
       const perf = Object.entries(grouped).map(([key, stocks]) => {
-        const totalCap = stocks.reduce((sum, s) => sum + (s.totalMarketCap || 0), 0);
-        const weightedChange = totalCap
-          ? stocks.reduce((sum, s) => sum + ((s.totalMarketCap / totalCap) * s.ChangePercent), 0)
-          : 0;
-        return { key, avg: weightedChange };
+        if (averageType === 'weighted') {
+          const totalCap = stocks.reduce((sum, s) => sum + (s.totalMarketCap || 0), 0);
+          const avg = totalCap
+            ? stocks.reduce((sum, s) => sum + ((s.totalMarketCap / totalCap) * s.ChangePercent), 0)
+            : 0;
+          return { key, avg };
+        } else {
+          const avg = stocks.reduce((sum, s) => sum + s.ChangePercent, 0) / stocks.length;
+          return { key, avg };
+        }
       }).sort((a, b) => b.avg - a.avg);
 
       perf.forEach(p => {
