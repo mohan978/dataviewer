@@ -17,10 +17,10 @@
     <input type="text" id="search" placeholder="Search Symbol or Group..." style="padding: 5px; margin-right: 10px;">
     <select id="groupSelect"></select>
     <select id="averageType" style="margin-left: 10px;">
-      <option value="weighted">Simple Average</option>
-      <option value="simple">Weighted Average</option>
+      <option value="simple">Simple Average</option>
+      <option value="weighted">Weighted Average</option>
     </select>
-    <button id="downloadBtn" style="margin-left: 20px;" display: none;">Download Excel</button>
+    <button id="downloadBtn" style="margin-left: 20px; display: none;" >Download Excel</button>
   </div>
   </div>
 
@@ -14196,6 +14196,9 @@
     }
 
 async function loadLatestFromFirebase() {
+  const statusEl = document.getElementById('status');
+  statusEl.textContent = '⏳ Loading from Firebase...';
+
   const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   const now = new Date();
   const monthName = months[now.getMonth()];
@@ -14206,28 +14209,28 @@ async function loadLatestFromFirebase() {
     const monthSnap = await db.ref(`stocks/${monthFormatted}`).once('value');
     const dateKeys = Object.keys(monthSnap.val() || {});
     if (dateKeys.length === 0) {
-      alert("⚠️ No data found in Firebase for this month");
+      statusEl.textContent = "⚠️ No data found in Firebase for this month.";
       return;
     }
 
-    const latestDate = dateKeys.sort().pop(); // e.g. "30 Jun 2025"
+    const latestDate = dateKeys.sort().pop();
     const timeSnap = await db.ref(`stocks/${monthFormatted}/${latestDate}`).once('value');
     const timeKeys = Object.keys(timeSnap.val() || {});
-    const latestTime = timeKeys.sort().pop(); // e.g. "11-44-23 AM"
+    const latestTime = timeKeys.sort().pop();
 
     if (!latestTime) {
-      alert("⚠️ No time entries found for latest date in Firebase");
+      statusEl.textContent = "⚠️ No time entries found for latest date.";
       return;
     }
 
-    // ✅ Load most recent available data
-    console.log("✅ Loading latest Firebase data:", monthFormatted, latestDate, latestTime);
+    statusEl.textContent = `✅ Loaded data from: ${monthFormatted} / ${latestDate} / ${latestTime}`;
     loadFromFirebase(monthFormatted, latestDate, latestTime);
   } catch (err) {
     console.error("❌ Firebase load error", err);
-    alert("❌ Error loading data from Firebase");
+    statusEl.textContent = "❌ Error loading data from Firebase.";
   }
 }
+
 
 
     function loadFromFirebase(month, date, time) {
