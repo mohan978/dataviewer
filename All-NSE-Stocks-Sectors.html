@@ -1,46 +1,62 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Sector Stocks Performance</title>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <title>Live Stocks Viewer</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f4f4f4; }
+    select, button, input { margin: 5px; padding: 6px; }
+    h3 { margin-top: 30px; }
+    .tile {
+      padding: 10px;
+      border-radius: 6px;
+      min-width: 100px;
+      text-align: center;
+      background-color: #f0f0f0;
+      border-left: 5px solid #888;
+    }
+    .tile.positive { background-color: #d4edda; border-left-color: green; }
+    .tile.negative { background-color: #f8d7da; border-left-color: red; }
+    .perf-group { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+  </style>
 </head>
-<body style="font-family: Arial; padding: 6px; background: #f4f4f4;">
-  <ph2>Paste JSON Array</p>
-  <textarea id="liveData" rows="5" cols="100" placeholder="Paste JSON array with Symbol, LTP, ChangePercent, totalMarketCap"></textarea><br><br>
-  <button onclick="sendAndShow()">Send to Firebase & Show</button>
-  <button onclick="loadLatestFromFirebase()">📥 Load Latest from Firebase & Show</button>
-  <div id="status" style="margin-top:10px; font-weight: bold;"></div>
+<body>
 
-  <hr>
-  <div id="controls" style="margin-bottom: 20px; display: none;">
-    <input type="text" id="search" placeholder="Search Symbol or Group..." style="padding: 5px; margin-right: 10px;">
-    <select id="groupSelect"></select>
-    <select id="averageType" style="margin-left: 10px;">
-      <option value="simple">Simple Average</option>
-      <option value="weighted">Weighted Average</option>
-    </select>
-    <button id="downloadBtn" style="margin-left: 20px; display: none;" >Download Excel</button>
-  </div>
-  </div>
+<h2>Live Stocks Viewer</h2>
 
-  <div id="performance"></div>
-  <div id="stocks"></div>
+<label>Year: <select id="yearSelect"></select></label>
+<label>Month: <select id="monthSelect"></select></label>
+<label>Date: <select id="dateSelect" onchange="loadTimes()"></select></label>
+<label>Time: <select id="timeSelect"></select></label>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyBGwKyyG_YRKetxJK39T_SEn2YSCDeFKz4",
-      authDomain: "total-trades-stocks-data.firebaseapp.com",
-      databaseURL: "https://total-trades-stocks-data-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "total-trades-stocks-data",
-      storageBucket: "total-trades-stocks-data.appspot.com",
-      messagingSenderId: "538258736805",
-      appId: "1:538258736805:web:fb75d145da4ab9f4bb2f4c"
-    };
+<button onclick="getData()">Get Data</button>
+<button onclick="getLatestEntry()">Live</button>
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-  const stockInfo =[
+<br><br>
+<input id="search" placeholder="Search symbol or group..." />
+<select id="groupSelect">
+  <option value="Macro">Group by Macro</option>
+  <option value="Sector">Group by Sector</option>
+  <option value="Industry">Group by Industry</option>
+  <option value="BasicIndustry">Group by BasicIndustry</option>
+</select>
+<select id="averageType">
+  <option value="simple">Simple Average</option>
+  <option value="weighted">Weighted Average</option>
+</select>
+
+<div id="performance"></div>
+<div id="stocks"></div>
+<script>
+const firebaseConfig = {
+  databaseURL: "https://total-trades-stocks-data-default-rtdb.asia-southeast1.firebasedatabase.app"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// stockInfo remains unchanged
+const stockInfo = [
   {
     "Symbol": "CEATLTD",
     "Macro": "Consumer Discretionary",
@@ -14161,227 +14177,199 @@
     "BasicIndustry": "Power Generation"
   }
 ];
+let enriched = [];
 
-    let enriched = [];
+function fillDropdown(id, items, placeholder = "---Select---") {
+  const el = document.getElementById(id);
+  el.innerHTML = `<option value="">${placeholder}</option>` +
+    items.map(x => `<option value="${x}">${x}</option>`).join('');
+}
 
-    async function sendAndShow() {
-      const text = document.getElementById('liveData').value;
-      let parsed;
+// ✅ Load Months from indexes
+async function loadMonths() {
+  const year = "2025";
+  document.getElementById("yearSelect").innerHTML = `<option>${year}</option>`;
+  fillDropdown("monthSelect", [], "Loading months...");
+  fillDropdown("dateSelect", []);
+  fillDropdown("timeSelect", []);
+  const snap = await db.ref(`indexes/${year}/months`).get();
+  const val = snap.val();
+  const months = val ? Object.keys(val) : [];
+  fillDropdown("monthSelect", months);
+}
 
-      try {
-        parsed = JSON.parse(text);
-        if (!Array.isArray(parsed)) throw 'Not array';
-      } catch {
-        document.getElementById("status").textContent = "❌ Invalid JSON array";
-        return;
-      }
+// ✅ Load Dates from indexes
+async function loadDates() {
+  const year = "2025";
+  const month = document.getElementById("monthSelect").value;
+  if (!month) return;
+  fillDropdown("dateSelect", [], "Loading dates...");
+  fillDropdown("timeSelect", []);
+  const snap = await db.ref(`indexes/${year}/${month}/dates`).get();
+  const val = snap.val();
+  const dates = val ? Object.keys(val) : [];
+  fillDropdown("dateSelect", dates);
+}
 
-      const now = new Date();
-      const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-      const day = String(now.getDate()).padStart(2, '0');
-      const monthName = months[now.getMonth()];
-      const year = now.getFullYear();
-      const dateFormatted = `${day} ${monthName} ${year}`;
-      const monthFormatted = `${monthName} ${year}`;
-      const time = `${now.getHours()}-${now.getMinutes()}-${now.getSeconds()}`;
+// ✅ Load Times from indexes
+async function loadTimes() {
+  const [year, month, date] = ["yearSelect", "monthSelect", "dateSelect"].map(id => document.getElementById(id).value);
+  if (!date) return;
+  fillDropdown("timeSelect", [], "Loading times...");
+  const snap = await db.ref(`indexes/${year}/${month}/${date}/times`).get();
+  const val = snap.val();
+  const times = val ? Object.keys(val).sort((a, b) => {
+    const toSec = t => t.split('-').reduce((s, n, i) => s + Number(n) * [3600, 60, 1][i], 0);
+    return toSec(a) - toSec(b);
+  }) : [];
+  fillDropdown("timeSelect", times);
+}
 
-      const updates = {};
-      parsed.forEach(stock => {
-        updates[`stocks/${monthFormatted}/${dateFormatted}/${time}/${stock.Symbol}`] = stock;
-      });
-      await db.ref().update(updates);
-
-      document.getElementById("status").textContent = `✅ Sent to Firebase at ${monthFormatted}/${dateFormatted}/${time}`;
-      loadFromFirebase(monthFormatted, dateFormatted, time);
-    }
-
-async function loadLatestFromFirebase() {
-  const statusEl = document.getElementById('status');
-  statusEl.textContent = '⏳ Loading from Firebase...';
-
-  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  const now = new Date();
-  const monthName = months[now.getMonth()];
-  const year = now.getFullYear();
-  const monthFormatted = `${monthName} ${year}`;
-
-  try {
-    const monthSnap = await db.ref(`stocks/${monthFormatted}`).once('value');
-    const dateKeys = Object.keys(monthSnap.val() || {});
-    if (dateKeys.length === 0) {
-      statusEl.textContent = "⚠️ No data found in Firebase for this month.";
-      return;
-    }
-
-    const latestDate = dateKeys.sort().pop();
-    const timeSnap = await db.ref(`stocks/${monthFormatted}/${latestDate}`).once('value');
-    const timeKeys = Object.keys(timeSnap.val() || {});
-    const latestTime = timeKeys.sort().pop();
-
-    if (!latestTime) {
-      statusEl.textContent = "⚠️ No time entries found for latest date.";
-      return;
-    }
-
-    statusEl.textContent = `✅ Loaded data from: ${monthFormatted} / ${latestDate} / ${latestTime}`;
-    loadFromFirebase(monthFormatted, latestDate, latestTime);
-  } catch (err) {
-    console.error("❌ Firebase load error", err);
-    statusEl.textContent = "❌ Error loading data from Firebase.";
+// ✅ Fetch full stock data
+async function getData() {
+  const [year, month, date, time] = ["yearSelect", "monthSelect", "dateSelect", "timeSelect"].map(id => document.getElementById(id).value);
+  if (!month || !date || !time) {
+    alert("Please select all dropdowns before fetching data.");
+    return;
   }
+
+  document.getElementById("performance").innerHTML = '<p style="font-size:14px;">⏳ Loading data...</p>';
+  const snap = await db.ref(`stocks/${year}/${month}/${date}/${time}/Data`).get();
+  const data = snap.val();
+
+  if (!data) {
+    document.getElementById("performance").innerHTML = '<p>No data found.</p>';
+    return;
+  }
+
+  enriched = Object.values(data).map(d => {
+    const symbol = (d.symbol || d.Symbol || "").toUpperCase();
+    const info = stockInfo.find(s => s.Symbol === symbol) || {};
+    return {
+      Symbol: symbol,
+      LTP: parseFloat(d.LTP) || 0,
+      ChangePercent: parseFloat(d["Change%"]) || 0,
+      totalMarketCap: parseFloat(d.MarketCap) || 0,
+      Macro: info.Macro || "Unknown",
+      Sector: info.Sector || "Unknown",
+      Industry: info.Industry || "Unknown",
+      BasicIndustry: info.BasicIndustry || "Unknown"
+    };
+  });
+
+  render();
+}
+
+function getFiltered() {
+  const search = document.getElementById("search").value.toLowerCase();
+  return enriched.filter(s =>
+    s.Symbol.toLowerCase().includes(search) ||
+    s[document.getElementById("groupSelect").value]?.toLowerCase().includes(search)
+  );
+}
+
+function render() {
+  const groupKey = document.getElementById("groupSelect").value;
+  const averageType = document.getElementById("averageType").value;
+  const data = getFiltered();
+  const grouped = {};
+
+  data.forEach(s => {
+    const key = s[groupKey] || 'Unknown';
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(s);
+  });
+
+  const perfDiv = document.getElementById("performance");
+  perfDiv.innerHTML = `<h3>${groupKey} Performance (${averageType})</h3>`;
+  const perfBox = document.createElement("div");
+  perfBox.className = "perf-group";
+
+  const perf = Object.entries(grouped).map(([k, stocks]) => {
+    const avg = averageType === "weighted"
+      ? stocks.reduce((sum, s) => sum + ((s.totalMarketCap || 0) * s.ChangePercent), 0) /
+        (stocks.reduce((sum, s) => sum + (s.totalMarketCap || 0), 0) || 1)
+      : stocks.reduce((sum, s) => sum + s.ChangePercent, 0) / stocks.length;
+    return { key: k, avg };
+  }).sort((a, b) => b.avg - a.avg);
+
+  perf.forEach(p => {
+    const div = document.createElement("div");
+    div.className = `tile ${p.avg > 0 ? 'positive' : p.avg < 0 ? 'negative' : ''}`;
+    div.innerHTML = `<strong>${p.key}</strong><br>${p.avg.toFixed(2)}%`;
+    div.onclick = () => {
+      const target = document.getElementById(`group-${p.key.replace(/\s+/g, '-')}`);
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    };
+    perfBox.appendChild(div);
+  });
+  perfDiv.appendChild(perfBox);
+
+  const stocksDiv = document.getElementById("stocks");
+  stocksDiv.innerHTML = '';
+  Object.entries(grouped).forEach(([k, list]) => {
+    const h = document.createElement('h3');
+    h.textContent = k;
+    h.id = `group-${k.replace(/\s+/g, '-')}`;
+    h.style.cursor = 'pointer';
+    h.onclick = () => {
+      const symbols = list.map(s => `NSE:${s.Symbol}`).join(', ');
+      navigator.clipboard.writeText(symbols).then(() => alert("Copied to clipboard"));
+    };
+    stocksDiv.appendChild(h);
+
+    const row = document.createElement("div");
+    row.className = "perf-group";
+    list.sort((a, b) => b.ChangePercent - a.ChangePercent).forEach(s => {
+      const div = document.createElement("div");
+      div.className = `tile ${s.ChangePercent > 0 ? 'positive' : s.ChangePercent < 0 ? 'negative' : ''}`;
+      div.innerHTML = `${s.Symbol}<br>₹${s.LTP}<br><b style="color:${s.ChangePercent > 0 ? 'green' : s.ChangePercent < 0 ? 'red' : '#333'}">${s.ChangePercent.toFixed(2)}%</b>`;
+      row.appendChild(div);
+    });
+    stocksDiv.appendChild(row);
+  });
 }
 
 
+async function getLatestEntry() {
+  const year = "2025";
+  const month = document.getElementById("monthSelect").value;
+  const date = document.getElementById("dateSelect").value;
 
-    function loadFromFirebase(month, date, time) {
-      db.ref(`stocks/${month}/${date}/${time}`).once("value", snapshot => {
-        const data = snapshot.val() || {};
-        enriched = Object.values(data).map(d => {
-          const info = stockInfo.find(s => s.Symbol === d.Symbol) || {};
-          return {
-            Symbol: d.Symbol,
-            LTP: d.LTP ?? d.lastPrice ?? 'N/A',
-            ChangePercent: d.ChangePercent ?? d.changePercent ?? 0,
-            totalMarketCap: d.totalMarketCap ?? d.marketCap ?? 0,
-            Macro: info.Macro || "Unknown",
-            Sector: info.Sector || "Unknown",
-            Industry: info.Industry || "Unknown",
-            BasicIndustry: info.BasicIndustry || "Unknown"
-          };
-        });
-        showUI();
-      });
-    }
+  if (!month || !date) {
+    alert("Please select both month and date first.");
+    return;
+  }
 
-    function showUI() {
-      document.getElementById('controls').style.display = 'block';
+  const timeSnap = await db.ref(`indexes/${year}/${month}/${date}/times`).get();
+  const val = timeSnap.val();
 
-      const groupSelect = document.getElementById("groupSelect");
-      groupSelect.innerHTML = '';
-      ['Macro', 'Sector', 'Industry', 'BasicIndustry'].forEach(opt => {
-        const o = document.createElement('option');
-        o.value = opt;
-        o.textContent = `Group by ${opt}`;
-        groupSelect.appendChild(o);
-      });
+  if (!val) {
+    fillDropdown("timeSelect", []);
+    alert("⚠️ No time entries found.");
+    return;
+  }
 
-      document.getElementById("downloadBtn").onclick = () => {
-        const rows = [['Symbol', 'Macro', 'Sector', 'Industry', 'BasicIndustry', 'LTP', 'ChangePercent']];
-        getFiltered().forEach(s => {
-          rows.push([s.Symbol, s.Macro, s.Sector, s.Industry, s.BasicIndustry, s.LTP, s.ChangePercent]);
-        });
-        const csv = rows.map(r => r.join(',')).join('\n');
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'stocks_export.csv';
-        link.click();
-      };
+  const times = Object.keys(val).sort((a, b) => {
+    const toSec = t => t.split('-').reduce((s, n, i) => s + Number(n) * [3600, 60, 1][i], 0);
+    return toSec(a) - toSec(b);
+  });
 
-      document.getElementById("search").addEventListener("input", render);
-      groupSelect.addEventListener("change", render);
-      document.getElementById("averageType").addEventListener("change", render);
-      render();
-    }
+  const latest = times.at(-1);
+  fillDropdown("timeSelect", times);
+  document.getElementById("timeSelect").value = latest;
 
-    function getFiltered() {
-      const search = document.getElementById("search").value.toLowerCase();
-      return enriched.filter(s =>
-        s.Symbol.toLowerCase().includes(search) ||
-        s[document.getElementById("groupSelect").value]?.toLowerCase().includes(search)
-      );
-    }
+  getData(); // ✅ Fetch and show latest data
+}
+// === EVENT LISTENERS ===
+document.getElementById("search").addEventListener("input", render);
+document.getElementById("groupSelect").addEventListener("change", render);
+document.getElementById("averageType").addEventListener("change", render);
+document.getElementById("monthSelect").addEventListener("change", loadDates);
+document.getElementById("dateSelect").addEventListener("change", loadTimes);
 
-    function render() {
-      const groupKey = document.getElementById("groupSelect").value;
-      const averageType = document.getElementById("averageType").value;
-      const data = getFiltered();
-      const grouped = {};
-
-      data.forEach(s => {
-        const key = s[groupKey] || 'Unknown';
-        if (!grouped[key]) grouped[key] = [];
-        grouped[key].push(s);
-      });
-
-      const perfDiv = document.getElementById("performance");
-      perfDiv.innerHTML = `<h3>${groupKey} Performance (${averageType === 'weighted' ? 'Weighted' : 'Simple'} Average)</h3>`;
-      const perfBoxContainer = document.createElement("div");
-      perfBoxContainer.style.display = "flex";
-      perfBoxContainer.style.flexWrap = "wrap";
-      perfBoxContainer.style.gap = "10px";
-      perfBoxContainer.style.marginBottom = "20px";
-
-      const perf = Object.entries(grouped).map(([key, stocks]) => {
-        if (averageType === 'weighted') {
-          const totalCap = stocks.reduce((sum, s) => sum + (s.totalMarketCap || 0), 0);
-          const avg = totalCap
-            ? stocks.reduce((sum, s) => sum + ((s.totalMarketCap / totalCap) * s.ChangePercent), 0)
-            : 0;
-          return { key, avg };
-        } else {
-          const avg = stocks.reduce((sum, s) => sum + s.ChangePercent, 0) / stocks.length;
-          return { key, avg };
-        }
-      }).sort((a, b) => b.avg - a.avg);
-
-      perf.forEach(p => {
-        const tile = document.createElement("a");
-        tile.href = `#group-${p.key.replace(/\s+/g, '-')}`;
-        tile.textContent = `${p.key}\n${p.avg.toFixed(2)}%`;
-        tile.style.whiteSpace = 'pre-line';
-        tile.style.padding = '10px';
-        tile.style.minWidth = '120px';
-        tile.style.textAlign = 'center';
-        tile.style.textDecoration = 'none';
-        tile.style.fontWeight = 'bold';
-        tile.style.borderRadius = '6px';
-        tile.style.color = '#000';
-        tile.style.backgroundColor = p.avg > 0 ? '#d4edda' : p.avg < 0 ? '#f8d7da' : '#f0f0f0';
-        tile.style.borderLeft = `5px solid ${p.avg > 0 ? 'green' : p.avg < 0 ? 'red' : '#888'}`;
-        perfBoxContainer.appendChild(tile);
-      });
-      perfDiv.appendChild(perfBoxContainer);
-
-      const stockDiv = document.getElementById("stocks");
-      stockDiv.innerHTML = '';
-      perf.forEach(({ key }) => {
-        const h = document.createElement('h3');
-        h.id = `group-${key.replace(/\s+/g, '-')}`;
-        h.textContent = key;
-        h.style.cursor = 'pointer';
-        h.onclick = () => {
-          const symbols = grouped[key].map(s => `NSE:${s.Symbol}`).join(', ');
-          navigator.clipboard.writeText(symbols).then(() => alert('Copied to clipboard!'));
-        };
-
-        stockDiv.appendChild(h);
-
-        const container = document.createElement('div');
-        container.style.display = 'flex';
-        container.style.flexWrap = 'wrap';
-        container.style.gap = '10px';
-
-        grouped[key].sort((a, b) => b.ChangePercent - a.ChangePercent).forEach(s => {
-          const tile = document.createElement('div');
-          tile.style.padding = '10px';
-          tile.style.borderRadius = '6px';
-          tile.style.minWidth = '100px';
-          tile.style.textAlign = 'center';
-          tile.style.backgroundColor = s.ChangePercent > 0 ? '#d4edda' : s.ChangePercent < 0 ? '#f8d7da' : '#f0f0f0';
-          tile.style.borderLeft = `5px solid ${s.ChangePercent > 0 ? 'green' : s.ChangePercent < 0 ? 'red' : '#888'}`;
-          tile.innerHTML = `
-            <div>${s.Symbol}</div>
-            <div>₹${s.LTP}</div>
-            <div style="color: ${s.ChangePercent > 0 ? 'green' : s.ChangePercent < 0 ? 'red' : '#333'}">
-              ${s.ChangePercent.toFixed(2)}%
-            </div>`;
-          container.appendChild(tile);
-        });
-
-        stockDiv.appendChild(container);
-      });
-    }
-  </script>
+// === INITIAL LOAD ===
+loadMonths();
+</script>
 </body>
 </html>
