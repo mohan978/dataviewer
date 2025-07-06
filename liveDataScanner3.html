@@ -2792,12 +2792,15 @@ async function showLiveScannerAllStocksDataInTable()
 	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
 	var theadStr = '<thead class="tableRowClass">   <tr>      '
 	+'<th>Symbol</th>'
+	+' <th>%Chng/Range</th>'
 	+' <th>BreakoutT</th>'
 	+' <th>ContinueT</th>'
 	
 	+' <th>Trend_5m</th>'
-	+' <th>BreakoutStngh</th>'
+	
 	+' <th>Chng%Ratio</th>'
+	+' <th>BreakoutStngh</th>'
+	+' <th>Score</th>'
 	
 	+' <th>c%</th>'
 	+' <th>Sgnl%</th>'
@@ -2950,13 +2953,16 @@ async function showLiveScannerAllStocksDataInTable()
 		tablesStr += '<tr class="item"><td>'
 		+ symbol
 		+'</td><td>'
+	
+		+ ( last_swing_obj_5m['avg_range_%'] ?( ( (  Math.abs(last_swing_obj_5m ['breakout_candle'][4] - last_swing_obj_5m ['breakout_candle'][1]) / ( last_swing_obj_5m ['breakout_candle'][1]))*100 ) / last_swing_obj_5m['avg_range_%'] ).toFixed(2)    : ''  )
+		+'</td><td>'
 		
 		//+ last_swing_obj_5m['inside_candles']
-		+ ( last_swing_obj_5m['breakout_candle']  ? last_swing_obj_5m['breakout_candle'][0] : 0 )
+		+ ( last_swing_obj_5m['breakout_candle']  ? last_swing_obj_5m['breakout_candle'][0] : '' )
 		+'</td><td>'
 		 
 		//+ last_swing_obj_5m['inside_candles']
-		+ ( last_swing_obj_5m['continuation_candle']  ? last_swing_obj_5m['continuation_candle'][0] : 0 )
+		+ ( last_swing_obj_5m['continuation_candle']  ? last_swing_obj_5m['continuation_candle'][0] : '' )
 		+'</td><td>'
 		
 		+ ( last_swing_obj_5m['trend']  ? last_swing_obj_5m['trend'] : 0 )
@@ -2969,11 +2975,14 @@ async function showLiveScannerAllStocksDataInTable()
 		//+ ( last_swing_obj_5m['day_close_candle'] ? last_swing_obj_5m ['day_close_candle'][0]  : ''  )
 		
 		+'</td><td>'
+		+ ( last_swing_obj_5m['avg_pChange'] ?( ( (  Math.abs(last_swing_obj_5m ['breakout_candle'][4] - last_swing_obj_5m ['breakout_candle'][1]) / ( last_swing_obj_5m ['breakout_candle'][1]))*100 ) / last_swing_obj_5m['avg_pChange'] ).toFixed(2)    : ''  )
+	
+		+'</td><td>'
 		+ ( last_swing_obj_5m['breakout_candle'] ?( (  Math.abs(last_swing_obj_5m ['breakout_candle'][4] - last_swing_obj_5m ['breakout_candle'][1]) / (last_swing_obj_5m ['breakout_candle'][2] - last_swing_obj_5m ['breakout_candle'][3]))*100 ) .toFixed(2)    : ''  )
 	
 	
 		+'</td><td>'
-		+ ( last_swing_obj_5m['avg_pChange'] ?( ( (  Math.abs(last_swing_obj_5m ['breakout_candle'][4] - last_swing_obj_5m ['breakout_candle'][1]) / ( last_swing_obj_5m ['breakout_candle'][1]))*100 ) / last_swing_obj_5m['avg_pChange'] ).toFixed(2)    : ''  )
+		+ ( last_swing_obj_5m['avg_pChange'] ?  Math.abs(( ( (  Math.abs(last_swing_obj_5m ['breakout_candle'][4] - last_swing_obj_5m ['breakout_candle'][1]) / ( last_swing_obj_5m ['breakout_candle'][1]))*100 ) / last_swing_obj_5m['avg_pChange'] ) * percentageChange ).toFixed(2)    : ''  )
 	
 	
 		+'</td><td>'
