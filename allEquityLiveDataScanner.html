@@ -381,6 +381,12 @@ width: 98%;
 <div class="spaceBetweenTables">  	<div id="perticularEquityTableContainer"></div> </div>
 <div class="spaceBetweenTables">  	<div id="breakoutStocksTableContainer"></div> </div>
 <div class="spaceBetweenTables">  	<div id="highestConsolidationBreakoutStocksTableContainer"></div> </div>
+
+
+Breakout Time: 		<select id="breakoutTimeSelector"  onchange="showLiveScannerAllStocksDataInTable()">
+<option>ALL</option>
+</select>
+
 <div class="spaceBetweenTables">  	<div id="highLowBreakoutContinuationStocksTableContainer"></div> </div>
 <div class="spaceBetweenTables">  	<div id="highLowBreakoutContinuationStocksTableContainer2"></div> </div>
 
@@ -1411,7 +1417,8 @@ function setCommonSelectors()
 	//var selectElementRef = document.getElementById("derivativesSymbols");
 	
 	var timeValuesArray 
-	timeValuesArray = ( firestoreIndexObj[ monthYearCollection ] [tradingDate] ).sort();
+	//timeValuesArray = ( firestoreIndexObj[ monthYearCollection ] [tradingDate] ).sort();
+	timeValuesArray = ( firestoreIndexObj[ monthYearCollection ]['all_equity_index'] [tradingDate] ).sort();
 	/*
 	if( firestoreIndexObj[ tradingDate ]['all_equity_index']['time_values'] !=undefined )
 	{
@@ -1774,9 +1781,40 @@ async function showSecurityWiseDeliveryPerStocks( selectedSpurtsTimeValue, selec
 	// await addEventListnerInTables()
 }	//	show_spurts_in_oi_underlyings_Data() Function ENDS HERE
 
+function set_breakout_timevalues()
+{
+
+  const selector = document.getElementById("breakoutTimeSelector");
+if( document.getElementById("breakoutTimeSelector").options.length<=1 )
+{
+  let hour = 9;
+  let minute = 20;
+
+  while (hour < 15 || (hour === 15 && minute <= 30)) {
+    const hh = hour.toString().padStart(2, '0');
+    const mm = minute.toString().padStart(2, '0');
+    const timeStr = `${hh}:${mm}:00`;
+
+    const option = document.createElement("option");
+    option.value = timeStr;
+    option.textContent = timeStr;
+    selector.appendChild(option);
+
+    minute += 5;
+    if (minute >= 60) {
+      minute = 0;
+      hour += 1;
+    }
+  }
+  }
+
+}
 
 async function showLiveScannerAllStocksDataInTable()
 {
+	set_breakout_timevalues()
+	 var breakoutTimeSelectorValue = document.getElementById("breakoutTimeSelector").value
+
 	 document.getElementById('perticularEquityTableContainer').innerHTML = "";
 	 /*
 	 var selectedDeliveryStockSymbol = document.getElementById("deliveryStockSymbol").value
@@ -1796,7 +1834,8 @@ async function showLiveScannerAllStocksDataInTable()
 	var selectedEquityTimeValue = selectedEquityTimeRef.value
 
 
-	var docPath = '/'+selectedYear+'/'+selectedMonthYear+'/'+selectedTradingDate+'/'+selectedTimeValue+'/'+selectedTimeValue
+	//var docPath = '/'+selectedYear+'/'+selectedMonthYear+'/'+selectedTradingDate+'/'+selectedTimeValue+'/'+selectedTimeValue
+	var docPath = '/'+selectedYear+'/'+selectedMonthYear+'/'+selectedTradingDate+'/'+'all_equity'+'/'+selectedTimeValue
 	//var allDerivativesDataArray = await fetchDerivativesCollectionData( docPathForSpurts )
 	//console.log( "docPath", docPath )
 	//var candleWiseDataObj = await fetchAndSaveDataIDB( docPath );
@@ -2734,6 +2773,7 @@ async function showLiveScannerAllStocksDataInTable()
 	
 	+' <th>c%</th>'
 	+' <th>Sgnl%</th>'
+	+' <th>Score</th>'
 	
 	/*
 	+' <th>Score_1m</th>'
@@ -2780,7 +2820,7 @@ async function showLiveScannerAllStocksDataInTable()
 	
 	//+'<th>Ratio%</th>   '
 	+' </tr></thead><tbody>'
-	var optMostActiveTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="highLowBreakoutContinuationStocksTableStr"><caption style="caption-side:top"> High Low Breakout Continuation Stocks| '+selectedTradingDate+' | '+timestamp+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	var optMostActiveTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="highLowBreakoutContinuationStocksTableStr"><caption style="caption-side:top"> 1st High Low Breakout Stocks| '+selectedTradingDate+' | '+timestamp+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
 	//var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
 	 
 	
@@ -2841,8 +2881,11 @@ async function showLiveScannerAllStocksDataInTable()
 		//var last_swing_obj_5m =   market_structure_selected_timeFrame_array && market_structure_selected_timeFrame_array.length > 1  ? market_structure_selected_timeFrame_array[ highestConsolidation_index ]   : {}; // or provide a default object like { time: null, type: null }
 		var last_swing_obj_5m =  dataObj['high_low_breakout_continuation_structure_5m'] [0]  // or provide a default object like { time: null, type: null }
 		//var last_swing_obj_5m =  dataObj['high_low_breakout_continuation_structure_5m'] [ dataObj['high_low_breakout_continuation_structure_5m'].length-1 ]  // or provide a default object like { time: null, type: null }
-		
+		var breakoutTime = last_swing_obj_5m['breakout_candle'][0]
 		//console.log( symbol, last_swing_obj_5m )
+		if( breakoutTime==breakoutTimeSelectorValue || breakoutTimeSelectorValue== 'ALL')
+		{
+
 
 		
 		tablesStr += '<tr class="item"><td>'
@@ -2894,8 +2937,15 @@ async function showLiveScannerAllStocksDataInTable()
 		+ ( last_swing_obj_5m['trend'] =='Bullish' ?  ( ( ( dataObj['day_high'] -  last_swing_obj_5m ['breakout_candle'][4] ) / last_swing_obj_5m ['breakout_candle'][4] ) * 100 ).toFixed(2) :  ( ( ( dataObj['day_low'] -  last_swing_obj_5m ['breakout_candle'][4] ) / last_swing_obj_5m ['breakout_candle'][4] ) * 100 ).toFixed(2) )
 		
 		 
+		+'</td><td>'
+		//+ dataObj['score_result_1m']['score']
+		+ ( last_swing_obj_5m['trend'] =='Bullish' ?  (( ( ( dataObj['day_high'] -  last_swing_obj_5m ['breakout_candle'][4] ) / last_swing_obj_5m ['breakout_candle'][4] ) * 100 ) * dataObj['high_low_breakout_continuation_structure_5m'].length).toFixed(2) :  (( ( ( dataObj['day_low'] -  last_swing_obj_5m ['breakout_candle'][4] ) / last_swing_obj_5m ['breakout_candle'][4] ) * 100 ) * dataObj['high_low_breakout_continuation_structure_5m'].length).toFixed(2) )
+		
+		 
 		//+'</td><td>'
 		+'</td></tr>'
+		}
+		
 		}
 
 		if( false && dataObj['score_result_1m'] != undefined )
@@ -3048,6 +3098,9 @@ async function showLiveScannerAllStocksDataInTable()
 	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
 	var theadStr = '<thead class="tableRowClass">   <tr>      '
 	+'<th>Symbol</th>'
+	+'<th>No.Break</th>'
+	+'<th>Score</th>'
+	+'<th>TimeDiff</th>'
 	+' <th>%Chng/Range</th>'
 	+' <th>Chng%Ratio</th>'
 	+' <th>BreakoutT</th>'
@@ -3110,9 +3163,13 @@ async function showLiveScannerAllStocksDataInTable()
 	
 	//+'<th>Ratio%</th>   '
 	+' </tr></thead><tbody>'
-	var optMostActiveTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="highLowBreakoutContinuationStocksTableStr2"><caption style="caption-side:top"> High Low Breakout Continuation Stocks| '+selectedTradingDate+' | '+timestamp+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	var optMostActiveTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="highLowBreakoutContinuationStocksTableStr2"><caption style="caption-side:top"> Latest High Low Breakout Stocks| '+selectedTradingDate+' | '+timestamp+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
 	//var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
 	 
+	const diffMins = (t1, t2) => (new Date(`1970-01-01T${t1}Z`) - new Date(`1970-01-01T${t2}Z`)) / 60000;
+	//console.log(diffMins("09:35:00", "09:30:00")); // 5
+
+
 	
 	function returnDataStr5( symbol, dataObj )
 	{
@@ -3171,12 +3228,22 @@ async function showLiveScannerAllStocksDataInTable()
 		//var last_swing_obj_5m =   market_structure_selected_timeFrame_array && market_structure_selected_timeFrame_array.length > 1  ? market_structure_selected_timeFrame_array[ highestConsolidation_index ]   : {}; // or provide a default object like { time: null, type: null }
 		//var last_swing_obj_5m =  dataObj['high_low_breakout_continuation_structure_5m'] [0]  // or provide a default object like { time: null, type: null }
 		var last_swing_obj_5m =  dataObj['high_low_breakout_continuation_structure_5m'] [ dataObj['high_low_breakout_continuation_structure_5m'].length-1 ]  // or provide a default object like { time: null, type: null }
-		
+		var last_swing_obj_5m_previous =   ( dataObj['high_low_breakout_continuation_structure_5m'].length >1 ? dataObj['high_low_breakout_continuation_structure_5m'] [ dataObj['high_low_breakout_continuation_structure_5m'].length-2 ] : undefined )  // or provide a default object like { time: null, type: null }
+		var breakoutTime = last_swing_obj_5m['breakout_candle'][0]
 		//console.log( symbol, last_swing_obj_5m )
-
-		
+		if( breakoutTime==breakoutTimeSelectorValue || breakoutTimeSelectorValue== 'ALL')
+		{
 		tablesStr += '<tr class="item"><td>'
 		+ symbol
+		+'</td><td>'
+		
+		+ (dataObj['high_low_breakout_continuation_structure_5m'].length)
+		+'</td><td>'
+		
+		+ (  percentageChange * dataObj['high_low_breakout_continuation_structure_5m'].length).toFixed(2)
+		+'</td><td>'
+		
+		+ ( last_swing_obj_5m_previous ? Math.abs(( diffMins(last_swing_obj_5m_previous['breakout_candle'][0], last_swing_obj_5m['breakout_candle'][0]) ) / 5 ) : '' )
 		+'</td><td>'
 	
 		+ ( last_swing_obj_5m['avg_range_%'] ?( ( (  Math.abs(last_swing_obj_5m ['breakout_candle'][4] - last_swing_obj_5m ['breakout_candle'][1]) / ( last_swing_obj_5m ['breakout_candle'][1]))*100 ) / last_swing_obj_5m['avg_range_%'] ).toFixed(2)    : ''  )
@@ -3226,6 +3293,8 @@ async function showLiveScannerAllStocksDataInTable()
 		 
 		//+'</td><td>'
 		+'</td></tr>'
+		
+		}
 		}
 
 		if( false && dataObj['score_result_1m'] != undefined )
