@@ -1,0 +1,621 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Breakouts Viewer</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #1e1e2f;
+      color: #f0f0f0;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h2 {
+      color: #ffffff;
+      margin-top: 0;
+    }
+
+    label, select, button {
+      margin: 5px;
+    }
+
+    select, button {
+      background-color: #2c2c3e;
+      color: #fff;
+      border: 1px solid #555;
+      padding: 6px 10px;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    button:hover:enabled {
+      background-color: #3e3e5a;
+      cursor: pointer;
+    }
+
+    .controls {
+      margin-bottom: 20px;
+    }
+
+    .container {
+      display: flex;
+      gap: 10px;
+    }
+
+    .left-panel {
+      width: 33%;
+    }
+
+    .right-panel {
+      width: 67%;
+      background: ;
+      color: white;
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #2b2b3d;
+      border: 1px solid #444;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #444;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    th {
+      background-color: #383850;
+      color: #ffdf6b;
+    }
+
+    tr:hover {
+      background-color: #383850;
+    }
+
+    #dataTable {
+      display: none;
+    }
+
+    .highlight {
+      background-color: #ffdf6b;
+      color: #000;
+    }
+
+    #chartContainer {
+      width: 100%;
+      height: 400px;
+    }
+.chart-box {
+  width: calc(50% - 20px);
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  padding: 10px;
+  background: #fff;
+  margin-bottom: 20px;
+ background: #2b2b3d;
+}
+.chart-area {
+  width: 100%;
+  height: 300px;
+}
+
+.#right-panel {
+  width: 67%;
+  overflow-y: auto; /* Add this line for vertical scrolling */
+  max-height: 1000px; /* Add a max-height to enable scrolling. Adjust as needed. */
+}
+
+.chart-controls {
+  margin-top: 15px;
+  margin-bottom: 20px;
+  border-top: 1px solid #444; /* Optional: adds a visual separator */
+  padding-top: 15px;
+}
+
+
+  </style>
+</head>
+<body>
+  <h2>🔎 Breakouts Viewer (Dark Mode)</h2>
+
+  <div class="controls">
+    <label for="yearSelect">📅 Year:</label>
+    <select id="yearSelect"><option>Select Year</option></select>
+
+    <label for="monthSelect">📆 Month:</label>
+    <select id="monthSelect" disabled><option>Select Month</option></select>
+
+    <label for="dateSelect">📌 Date:</label>
+    <select id="dateSelect" disabled><option>Select Date</option></select>
+
+    <button id="showBtn" disabled>📊 Show Data</button>
+  </div>
+
+<div class="chart-controls">
+  <label for="numChartsSelect">📈 Show Top Charts:</label>
+  <select id="numChartsSelect">
+    <option value="5">5</option>
+    <option value="10">10</option>
+    <option value="15">15</option>
+    <option value="20">20</option>
+    <option value="25">25</option>
+    <option value="30">30</option>
+    <option value="all">All</option>
+  </select>
+  <button id="showChartsBtn" disabled>📊 Show Charts</button>
+  <button id="clearChartsBtn" disabled>🧹 Clear Charts</button>
+</div>
+
+<div class="container">
+  <div class="left-panel">
+    </div>
+  <div class="right-panel">
+    </div>
+</div>
+
+
+  <div class="container">
+    <div class="left-panel">
+      <table id="dataTable">
+        <thead>
+          <tr>
+            <th onclick="sortTable(0)">Symbol 🔽</th>
+            <th onclick="sortTable(1)">Break 🔽</th>
+            <th onclick="sortTable(2)">Time 🔽</th>
+            <th onclick="sortTable(3)">Upload Time 🔽</th>
+          </tr>
+        </thead>
+        <tbody id="dataBody"></tbody>
+      </table>
+    </div>
+
+    <div class="right-panel">
+
+     <div id="chartContainer" style="display: flex; flex-wrap: wrap; gap: 20px;"></div>
+
+    </div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBGwKyyG_YRKetxJK39T_SEn2YSCDeFKz4",
+      authDomain: "total-trades-stocks-data.firebaseapp.com",
+      databaseURL: "https://total-trades-stocks-data-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "total-trades-stocks-data",
+      storageBucket: "total-trades-stocks-data.appspot.com",
+      messagingSenderId: "538258736805",
+      appId: "1:538258736805:web:fb75d145da4ab9f4bb2f4c",
+      measurementId: "G-C61NFZ2FS2"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const yearSelect = document.getElementById("yearSelect");
+    const monthSelect = document.getElementById("monthSelect");
+    const dateSelect = document.getElementById("dateSelect");
+    const showBtn = document.getElementById("showBtn");
+    const table = document.getElementById("dataTable");
+    const tbody = document.getElementById("dataBody");
+    const chartContainer = document.getElementById("chartContainer");
+    let chart, series;
+
+    // Populate Year Dropdown
+    db.ref('BreakOutsIndexes').once('value').then(snapshot => {
+      const years = Object.keys(snapshot.val() || {});
+      years.forEach(y => {
+        const option = document.createElement("option");
+        option.value = y;
+        option.text = y;
+        yearSelect.appendChild(option);
+      });
+    });
+
+    yearSelect.addEventListener("change", () => {
+      const year = yearSelect.value;
+      monthSelect.innerHTML = "<option>Select Month</option>";
+      monthSelect.disabled = false;
+      dateSelect.innerHTML = "<option>Select Date</option>";
+      dateSelect.disabled = true;
+      showBtn.disabled = true;
+      table.style.display = "none";
+
+      db.ref(`BreakOutsIndexes/${year}/months`).once('value').then(snapshot => {
+        const months = Object.keys(snapshot.val() || {});
+        months.forEach(m => {
+          const option = document.createElement("option");
+          option.value = m;
+          option.text = m;
+          monthSelect.appendChild(option);
+        });
+      });
+    });
+
+    monthSelect.addEventListener("change", () => {
+      const year = yearSelect.value;
+      const month = monthSelect.value;
+      dateSelect.innerHTML = "<option>Select Date</option>";
+      dateSelect.disabled = false;
+      showBtn.disabled = true;
+      table.style.display = "none";
+
+      db.ref(`BreakOutsIndexes/${year}/${month}/dates`).once('value').then(snapshot => {
+        const dates = Object.keys(snapshot.val() || {});
+        dates.forEach(d => {
+          const option = document.createElement("option");
+          option.value = d;
+          option.text = d;
+          dateSelect.appendChild(option);
+        });
+      });
+    });
+
+    dateSelect.addEventListener("change", () => {
+      showBtn.disabled = false;
+    });
+
+   showBtn.addEventListener("click", () => {
+    const year = yearSelect.value;
+    const month = monthSelect.value;
+    const date = dateSelect.value;
+
+    const path = `BreakOuts/${year}/${month}/${date}/Data`;
+    db.ref(path).once('value').then(snapshot => {
+        let data = snapshot.val();
+        tbody.innerHTML = "";
+
+        if (data && Array.isArray(data)) {
+            // Sort the data array by the 'time' property in DESCENDING order
+            data.sort((a, b) => {
+                const timeA = a.time;
+                const timeB = b.time;
+                // Swap b and a to sort in descending order
+                return timeB.localeCompare(timeA);
+            });
+
+            data.forEach(entry => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${entry.symbol}</td>
+                    <td>${entry.break}</td>
+                    <td>${entry.time.substring(11, 16)}</td>
+                    <td>${entry.upload}</td>
+                `;
+                row.addEventListener("click", () => loadChart(entry.symbol, year, month, date));
+                tbody.appendChild(row);
+            });
+            table.style.display = "table";
+
+        } else {
+            tbody.innerHTML = `<tr><td colspan="4">No data found.</td></tr>`;
+            table.style.display = "table";
+        }
+    });
+});
+
+    function sortTable(colIndex) {
+      const rows = Array.from(tbody.rows);
+      const asc = !tbody.getAttribute(`data-sort-${colIndex}`) || tbody.getAttribute(`data-sort-${colIndex}`) === "desc";
+      rows.sort((a, b) => {
+        const valA = a.cells[colIndex].textContent.trim().toLowerCase();
+        const valB = b.cells[colIndex].textContent.trim().toLowerCase();
+        return asc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+      });
+      rows.forEach(row => tbody.appendChild(row));
+      tbody.setAttribute(`data-sort-${colIndex}`, asc ? "asc" : "desc");
+    }
+
+  async function loadChart(symbol, year, month, date) {
+  const existingChart = document.getElementById(`chart_box_${symbol}`);
+  if (existingChart) {
+    console.log(`Chart for ${symbol} already exists.`);
+    return;
+  }
+
+  // Debugging logs (keep them for now, they are useful!)
+  console.log("--- loadChart Inputs ---");
+  console.log(`Input Symbol: '${symbol}' (Type: ${typeof symbol})`);
+  console.log(`Input Year: '${year}' (Type: ${typeof year})`);
+  console.log(`Input Month: '${month}' (Type: ${typeof month})`);
+  console.log(`Input Date: '${date}' (Type: ${typeof date})`);
+  console.log("------------------------");
+
+  const monthNameForMonthNode = month; 
+  const dayOfMonth = date;
+
+  const firebaseDayMonth = dayOfMonth; // This will now correctly be "23 July"
+
+  const path = `stockOHLC/${year}/${monthNameForMonthNode}/${firebaseDayMonth}/${symbol}/Data`;
+
+  console.log("--- Constructed Path Debug ---");
+  console.log("Constructed firebaseDayMonth:", firebaseDayMonth);
+  console.log("Final Firebase Path being checked:", path);
+  console.log("------------------------------");
+
+  const snap = await db.ref(path).once('value');
+  const raw = snap.val();
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'chart-box';
+  wrapper.id = `chart_box_${symbol}`;
+  wrapper.innerHTML = `<h4>${symbol}</h4><div class="chart-area" id="chart_${symbol}"></div>`;
+  chartContainer.appendChild(wrapper);
+
+
+  if (!raw) {
+    wrapper.innerHTML += `<p>No data found for ${symbol} at path: ${path}</p>`;
+    console.error(`Firebase: No data found for ${symbol} at path: ${path}`);
+    return;
+  }
+
+  const chart = LightweightCharts.createChart(wrapper.querySelector(`#chart_${symbol}`), {
+    width: wrapper.clientWidth,
+    height: 300,
+    layout: { background: { color: '#2b2b3d' }, textColor: '#f0f0f0' },
+    grid: { vertLines: { color: '#444' }, horzLines: { color: '#444' } },
+    rightPriceScale: { visible: true },
+    priceScale: { borderColor: '#ccc' },
+    timeScale: {
+      timezone: 'Asia/Kolkata', // Crucial for displaying times in IST
+      timeVisible: true,
+      secondsVisible: false
+    }
+  });
+
+  const series = chart.addCandlestickSeries();
+
+  function getUnixTimestampFromChartData(dataObject) {
+    const rawTimestampString = dataObject.ts ?? dataObject.timestamp;
+    if (rawTimestampString) {
+      return Math.floor(new Date(rawTimestampString).getTime() / 1000);
+    }
+    return null;
+  }
+
+  const chartData = Object.values(raw).map(c => {
+    const time = getUnixTimestampFromChartData(c);
+    
+    if (time === null) {
+      console.warn("Skipping OHLC data point due to missing timestamp in data:", c);
+      return null;
+    }
+
+    return {
+      time: time,
+      open: c.open,
+      high: c.high,
+      low: c.low,
+      close: c.close
+    };
+  }).filter(item => item !== null);
+
+  // Set the data to the series
+  series.setData(chartData);
+
+  // --- NEW: Show all data, then zoom to the latest candles ---
+  if (chartData.length > 0) {
+    // 1. Ensure all content fits (optional, but good for "show all data chart")
+    chart.timeScale().fitContent(); 
+    
+    // 2. Scroll to the rightmost (latest) data point to zoom in on it
+    chart.timeScale().scrollToRealtime();
+  } else {
+      // If no data, fitContent will just show an empty scale (as before)
+      chart.timeScale().fitContent(); 
+  }
+  // --- END NEW ---
+}
+
+// ... (existing firebaseConfig, db, yearSelect, etc.) ...
+
+const numChartsSelect = document.getElementById("numChartsSelect");
+const showChartsBtn = document.getElementById("showChartsBtn");
+const clearChartsBtn = document.getElementById("clearChartsBtn"); // New button reference
+
+// Modify your existing showBtn.addEventListener
+showBtn.addEventListener("click", () => {
+    const year = yearSelect.value;
+    const month = monthSelect.value;
+    const date = dateSelect.value;
+
+    const path = `BreakOuts/${year}/${month}/${date}/Data`;
+    db.ref(path).once('value').then(snapshot => {
+        let data = snapshot.val();
+        tbody.innerHTML = "";
+        clearChartsBtn.disabled = true; // Disable clear button until charts are shown
+
+        if (data && Array.isArray(data)) {
+            // Sort the data array by the 'time' property in DESCENDING order (highest time above)
+            data.sort((a, b) => {
+                const timeA = a.time;
+                const timeB = b.time;
+                return timeB.localeCompare(timeA); // Sort descending
+            });
+
+            data.forEach(entry => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${entry.symbol}</td>
+                    <td>${entry.break}</td>
+                    <td>${entry.time.substring(11, 16)}</td>
+                    <td>${entry.upload}</td>
+                `;
+                // No individual row click to load chart here initially,
+                // as charts will be loaded via "Show Charts" button
+                row.addEventListener("click", (event) => {
+                    // Highlight the clicked row
+                    const currentHighlighted = document.querySelector('.highlight');
+                    if (currentHighlighted) {
+                        currentHighlighted.classList.remove('highlight');
+                    }
+                    event.currentTarget.classList.add('highlight');
+
+                    // Load chart for single clicked stock
+                    loadChart(entry.symbol, year, month, date);
+                });
+                tbody.appendChild(row);
+            });
+            table.style.display = "table";
+            showChartsBtn.disabled = false; // Enable show charts button
+        } else {
+            tbody.innerHTML = `<tr><td colspan="4">No data found.</td></tr>`;
+            table.style.display = "table";
+            showChartsBtn.disabled = true; // Disable show charts button
+        }
+    });
+});
+
+// Event listener for the new "Show Charts" button
+showChartsBtn.addEventListener("click", () => {
+    chartContainer.innerHTML = ""; // Clear existing charts
+    clearChartsBtn.disabled = false; // Enable clear button
+
+    const numToShow = numChartsSelect.value;
+    const year = yearSelect.value;
+    const month = monthSelect.value;
+    const date = dateSelect.value;
+
+    const rows = tbody.querySelectorAll('tr'); // Get all rows in the table
+    let count = 0;
+
+    rows.forEach(row => {
+        if (numToShow !== 'all' && count >= parseInt(numToShow)) {
+            return; // Stop if we've reached the desired number of charts
+        }
+
+        const symbol = row.cells[0].textContent; // Get symbol from the first cell
+        loadChart(symbol, year, month, date);
+        count++;
+    });
+});
+
+// Event listener for the new "Clear Charts" button
+clearChartsBtn.addEventListener("click", () => {
+    chartContainer.innerHTML = ""; // Clear all charts
+    clearChartsBtn.disabled = true; // Disable clear button
+});
+
+
+// Your existing sortTable function remains the same
+function sortTable(colIndex) {
+    const rows = Array.from(tbody.rows);
+    const asc = !tbody.getAttribute(`data-sort-${colIndex}`) || tbody.getAttribute(`data-sort-${colIndex}`) === "desc";
+    rows.sort((a, b) => {
+        const valA = a.cells[colIndex].textContent.trim().toLowerCase();
+        const valB = b.cells[colIndex].textContent.trim().toLowerCase();
+        return asc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+    });
+    rows.forEach(row => tbody.appendChild(row));
+    tbody.setAttribute(`data-sort-${colIndex}`, asc ? "asc" : "desc");
+}
+
+
+// Your existing loadChart function remains the same
+async function loadChart(symbol, year, month, date) {
+    const existingChart = document.getElementById(`chart_box_${symbol}`);
+    if (existingChart) {
+        console.log(`Chart for ${symbol} already exists.`);
+        return;
+    }
+
+    console.log("--- loadChart Inputs ---");
+    console.log(`Input Symbol: '${symbol}' (Type: ${typeof symbol})`);
+    console.log(`Input Year: '${year}' (Type: ${typeof year})`);
+    console.log(`Input Month: '${month}' (Type: ${typeof month})`);
+    console.log(`Input Date: '${date}' (Type: ${typeof date})`);
+    console.log("------------------------");
+
+    const monthNameForMonthNode = month;
+    const dayOfMonth = date;
+
+    const firebaseDayMonth = dayOfMonth; // This will now correctly be "23 July"
+
+    const path = `stockOHLC/${year}/${monthNameForMonthNode}/${firebaseDayMonth}/${symbol}/Data`;
+
+    console.log("--- Constructed Path Debug ---");
+    console.log("Constructed firebaseDayMonth:", firebaseDayMonth);
+    console.log("Final Firebase Path being checked:", path);
+    console.log("------------------------------");
+
+    const snap = await db.ref(path).once('value');
+    const raw = snap.val();
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'chart-box';
+    wrapper.id = `chart_box_${symbol}`;
+    wrapper.innerHTML = `<h4>${symbol}</h4><div class="chart-area" id="chart_${symbol}"></div>`;
+    chartContainer.appendChild(wrapper);
+
+
+    if (!raw) {
+        wrapper.innerHTML += `<p>No data found for ${symbol} at path: ${path}</p>`;
+        console.error(`Firebase: No data found for ${symbol} at path: ${path}`);
+        return;
+    }
+
+    const chart = LightweightCharts.createChart(wrapper.querySelector(`#chart_${symbol}`), {
+        width: wrapper.clientWidth,
+        height: 300,
+        layout: { background: { color: '#2b2b3d' }, textColor: '#f0f0f0' },
+        grid: { vertLines: { color: '#444' }, horzLines: { color: '#444' } },
+        rightPriceScale: { visible: true },
+        priceScale: { borderColor: '#ccc' },
+        timeScale: {
+            timezone: 'Asia/Kolkata', // Crucial for displaying times in IST
+            timeVisible: true,
+            secondsVisible: false
+        }
+    });
+
+    const series = chart.addCandlestickSeries();
+
+    function getUnixTimestampFromChartData(dataObject) {
+        const rawTimestampString = dataObject.ts ?? dataObject.timestamp;
+        if (rawTimestampString) {
+            return Math.floor(new Date(rawTimestampString).getTime() / 1000);
+        }
+        return null;
+    }
+
+    const chartData = Object.values(raw).map(c => {
+        const time = getUnixTimestampFromChartData(c);
+
+        if (time === null) {
+            console.warn("Skipping OHLC data point due to missing timestamp in data:", c);
+            return null;
+        }
+
+        return {
+            time: time,
+            open: c.open,
+            high: c.high,
+            low: c.low,
+            close: c.close
+        };
+    }).filter(item => item !== null);
+
+    // Set the data to the series
+    series.setData(chartData);
+
+    if (chartData.length > 0) {
+        chart.timeScale().fitContent();
+        chart.timeScale().scrollToRealtime();
+    } else {
+        chart.timeScale().fitContent();
+    }
+}
+  </script>
+</body>
+</html>
