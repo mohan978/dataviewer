@@ -2274,7 +2274,8 @@ async function showLiveScannerAllStocksDataInTable()
 		
 		var breakoutTime = last_swing_obj_5m ['day_close_candle'][0]
 		//console.log( symbol, last_swing_obj_5m )
-		if( breakoutTime==breakoutTimeSelectorValue || breakoutTimeSelectorValue== 'ALL')
+		//if( breakoutTime==breakoutTimeSelectorValue || breakoutTimeSelectorValue== 'ALL')
+		if( (breakoutTime >=breakoutTimeSelectorValue && breakoutTime <=breakoutTimeTillSelectorValue) || breakoutTimeSelectorValue== 'ALL')
 		{
 		tablesStr += '<tr class="item"><td>'
 		+ symbol
@@ -2581,7 +2582,8 @@ async function showLiveScannerAllStocksDataInTable()
 
 		var breakoutTime = last_swing_obj_5m ['day_close_candle'][0]
 		//console.log( symbol, last_swing_obj_5m )
-		if( breakoutTime==breakoutTimeSelectorValue || breakoutTimeSelectorValue== 'ALL')
+		//if( breakoutTime==breakoutTimeSelectorValue || breakoutTimeSelectorValue== 'ALL')
+		if( (breakoutTime >=breakoutTimeSelectorValue && breakoutTime <=breakoutTimeTillSelectorValue) || breakoutTimeSelectorValue== 'ALL')
 		{
 		tablesStr += '<tr class="item"><td>'
 		+ symbol
@@ -3288,7 +3290,8 @@ async function showLiveScannerAllStocksDataInTable()
 		var last_swing_obj_5m_previous =   ( dataObj['high_low_breakout_continuation_structure_5m'].length >1 ? dataObj['high_low_breakout_continuation_structure_5m'] [ dataObj['high_low_breakout_continuation_structure_5m'].length-2 ] : undefined )  // or provide a default object like { time: null, type: null }
 		var breakoutTime = last_swing_obj_5m['breakout_candle'][0]
 		//console.log( symbol, last_swing_obj_5m )
-		if( breakoutTime==breakoutTimeSelectorValue || breakoutTimeSelectorValue== 'ALL')
+		//if( breakoutTime==breakoutTimeSelectorValue || breakoutTimeSelectorValue== 'ALL')
+		if( (breakoutTime >=breakoutTimeSelectorValue && breakoutTime <=breakoutTimeTillSelectorValue) || breakoutTimeSelectorValue== 'ALL')
 		{
 		tablesStr += '<tr class="item"><td>'
 		+ symbol
