@@ -3674,7 +3674,8 @@ async function showLiveScannerAllStocksDataInTable()
 		
 		//console.log( symbol, last_swing_obj_5m )
 		//if( breakoutTime==breakoutTimeSelectorValue || breakoutTimeSelectorValue== 'ALL')
-		if( breakoutTypeSelectorValue == breakoutType &&  (breakoutTime >=breakoutTimeSelectorValue && breakoutTime <=breakoutTimeTillSelectorValue) || breakoutTypeSelectorValue == breakoutType && breakoutTimeSelectorValue== 'ALL')
+		if( ( ( breakoutTypeSelectorValue == breakoutType || 'ALL' == breakoutTypeSelectorValue ) &&  (breakoutTime >=breakoutTimeSelectorValue && breakoutTime <=breakoutTimeTillSelectorValue) )
+		|| (( breakoutTypeSelectorValue == breakoutType || 'ALL' == breakoutTypeSelectorValue ) && breakoutTimeSelectorValue== 'ALL' ) )
 		{
 
 

@@ -1860,6 +1860,7 @@ async function showLiveScannerAllStocksDataInTable()
 	+' <th>TimeHVP</th>'
 	+' <th>HVP Near High</th>'
 	+' <th>HVP Near Low</th>'
+	+' <th>SpreadTime</th>'
 	
 	
 	+' <th>BuyChng</th>'
@@ -1898,8 +1899,24 @@ async function showLiveScannerAllStocksDataInTable()
 	var pChange_total_1m = 0
 	if( dataObj['pChange_total_1m'] !=undefined )
 		pChange_total_1m = dataObj['pChange_total_1m'].toFixed(2)
+		
+	var latest_spread_price_range_time = ''
+	if( dataObj['price_ranges_data_obj'] )
+	{
+		var price_ranges_data_obj = dataObj['price_ranges_data_obj']
+		var spread_price_ranges = Object.keys(price_ranges_data_obj)
+		/*
+		spread_price_ranges.sort((a, b) => {
+		  let timeA = a.split('_')[1];
+		  let timeB = b.split('_')[1];
+		  return timeB.localeCompare(timeA); // descending
+		});
+		*/
+		latest_spread_price_range_time = spread_price_ranges[0].split('_')[1]
+	}
 	
-	
+
+
 	
 	
 	/*
@@ -2024,6 +2041,9 @@ async function showLiveScannerAllStocksDataInTable()
 		+ HighestVolBar_near_day_high.toFixed(3)
 		+'</td><td>'
 		+ HighestVolBar_near_day_low.toFixed(3)
+		+'</td><td>'
+		+ latest_spread_price_range_time
+		
 		+'</td><td>'
 		+ ( dataObj['total_ask'] - HighestVolBar_priceRange_total_ask )
 		+'</td><td>'
