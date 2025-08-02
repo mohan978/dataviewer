@@ -15,6 +15,31 @@
  <!-- Importing JS files for charts of CanvaJs & HighCharts Ends Here-->
  
 
+<script>
+  // overwrite previous database configure
+  
+	//original database 
+    var firebaseConfig =  {
+  apiKey: "AIzaSyBGwKyyG_YRKetxJK39T_SEn2YSCDeFKz4",
+  authDomain: "total-trades-stocks-data.firebaseapp.com",
+  databaseURL: "https://total-trades-stocks-data-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "total-trades-stocks-data",
+  storageBucket: "total-trades-stocks-data.firebasestorage.app",
+  messagingSenderId: "538258736805",
+  appId: "1:538258736805:web:fb75d145da4ab9f4bb2f4c",
+  measurementId: "G-C61NFZ2FS2"
+	};
+	//testing database 
+    //var firebaseConfig = {  apiKey: "AIzaSyACT33FgxL-YBE443rdFT6qZzbUPksYae4",authDomain: "newtest13235466.firebaseapp.com",  projectId: "newtest13235466",  storageBucket: "newtest13235466.appspot.com",  messagingSenderId: "629424824780",  appId: "1:629424824780:web:620bbee032be96b45c7d69"};
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    // Get a reference to the Firestore database
+    var db = firebase.firestore();
+
+</script>
+
+
 
   <script src="functions/commonFunctions.js"></script>
   <script src="functions/tableSortingFunctons.js"></script>
@@ -23,9 +48,108 @@
  <script src="functions/firebaseFunctions.js"></script>
  <script src="functions/indexedDBFunctions.js"></script>
 
+
+<script>
+  // overwrite previous functions of "functions/firebaseFunctions.js"
+  
+function getFirestoreData( passedValue, passedObj )
+{
+	  var firebaseFetchedDocsLocalStorage = localStorage.getItem('firebaseFetchedDocs');
+  var firebaseFetchedDocs = firebaseFetchedDocsLocalStorage ? JSON.parse(firebaseFetchedDocsLocalStorage) : {};
+
+
+	const selectElement = document.getElementById("tradingDate");
+	 selectElement.innerHTML = '<option>Select</option>'
+	 if( passedObj !=undefined && passedObj !="" )
+	 {
+		for( var tradingDate in passedObj )
+		{
+		const optionElement = document.createElement("option");
+		optionElement.text = tradingDate;
+		selectElement.add(optionElement);
+		}
+	 	
+	 }
+	 else
+	 {
+	var monthYearCollection = document.getElementById('monthYear').value
+	var year = document.getElementById('year').value
+
+    //var usersRef = db.doc('/April 2023/26-Apr-2023/');
+    //var doc_path = '/' +year+'/' + monthYearCollection+'/'
+    var doc_path = year
+	console.log(doc_path)
+    //var usersRef = db.collection('May 2023')  
+    var usersRef = db.collection(doc_path)  
+	firestoreIndexObj = {};
+	
+    // Retrieve all documents in the 'users' collection
+    usersRef.get()
+      .then(function(querySnapshot) {
+      dataTemp = querySnapshot 
+      //console.log( querySnapshot );
+	  
+
+	  
+        querySnapshot.forEach(function(doc) {
+
+          //document.getElementById('firebaseData').innerHTML += (doc.id + " => " + JSON.stringify(doc.data()) + "<br>");
+          //console.log(doc.id, " => ", doc.data());
+		  firestoreIndexObj [doc.id] = doc.data()
+		  /*
+		  const optionElement = document.createElement("option");
+		optionElement.text = doc.id;
+		selectElement.add(optionElement);
+		console.log( optionElement )
+		*/
+        });
+		
+		//for( var tradingDate of (firestoreIndexObj[monthYearCollection]['trading_dates']).sort().reverse())
+		var trading_dates_array = Object.keys(firestoreIndexObj[monthYearCollection]['sensibull_screener'])
+		for( var tradingDate of ( trading_dates_array ).sort() )
+		{
+		const optionElement = document.createElement("option");
+		optionElement.text = tradingDate;
+		selectElement.add(optionElement);
+		}
+		
+		
+         // Attempt to update localStorage and handle quota exceeded error (Starts Here)
+          var maxAttempts = Object.keys(firebaseFetchedDocs).length;
+          var currentAttempt = 0;
+
+          while (currentAttempt < maxAttempts) {
+            try {
+             localStorage.setItem( 'firestoreIndexObj', JSON.stringify(firestoreIndexObj) )
+              break; // Successfully stored the new entry
+            } catch (e) {
+				//document.getElementById('messages').innerHTML = e;
+              // Remove oldest entry
+              var oldestEntryKey = Object.keys(firebaseFetchedDocs)[0];
+              delete firebaseFetchedDocs[oldestEntryKey];
+              currentAttempt++;
+            }
+          }
+		  // Attempt to update localStorage and handle quota exceeded error (Ends Here)
+		  
+		
+	refreshOrLiveFirebaseData(passedValue)
+      })
+      .catch(function(error) {
+        console.log("Error getting documents: ", error);
+      });
+	  }
+	  
+
+	  
+	}
+
+</script>
+
+
  <div id="importedContent"></div>
  
- <title>Live VP Scanner</title>
+ <title>Sensibull FnO Screener</title>
  
  
 
@@ -1408,7 +1532,8 @@ function setCommonSelectors()
 	//var selectElementRef = document.getElementById("derivativesSymbols");
 	
 	var timeValuesArray 
-	timeValuesArray = ( firestoreIndexObj[ monthYearCollection ] [tradingDate] ).sort();
+	//timeValuesArray = ( firestoreIndexObj[ monthYearCollection ] [tradingDate] ).sort();
+	timeValuesArray = ( firestoreIndexObj[monthYearCollection]['sensibull_screener'] [tradingDate] ).sort();
 	/*
 	if( firestoreIndexObj[ tradingDate ]['all_equity_index']['time_values'] !=undefined )
 	{
@@ -1455,6 +1580,7 @@ function setDerivativesSymbolsSelector( passedValue )
 {
 	var tradingDate = document.getElementById('tradingDate').value
 	var monthYearCollection = document.getElementById('monthYear').value
+	//var allSymbolsArray = (firestoreIndexObj[ monthYearCollection ]['stock_names']).sort();
 	var allSymbolsArray = (firestoreIndexObj[ monthYearCollection ]['stock_names']).sort();
 	var selectElementRef = document.getElementById("derivativesSymbols");
 	
@@ -1791,9 +1917,14 @@ async function showLiveScannerAllStocksDataInTable()
 	
 	var selectedEquityTimeRef = document.getElementById('equityTimeValues')
 	var selectedEquityTimeValue = selectedEquityTimeRef.value
+	
+	
+	// Object.keys(firestoreIndexObj[monthYearCollection]['sensibull_screener'])
+	///2025/August 2025/01-Aug-2025/sensibull_screener/09:06:00
 
-
-	var docPath = '/'+selectedYear+'/'+selectedMonthYear+'/'+selectedTradingDate+'/'+selectedTimeValue+'/'+selectedTimeValue
+	//var docPath = '/'+selectedYear+'/'+selectedMonthYear+'/'+selectedTradingDate+'/'+selectedTimeValue+'/'+selectedTimeValue
+	var docPath = '/'+selectedYear+'/'+selectedMonthYear+'/'+selectedTradingDate+'/'+'sensibull_screener'+'/'+selectedTimeValue
+	
 	//var allDerivativesDataArray = await fetchDerivativesCollectionData( docPathForSpurts )
 	//console.log( "docPath", docPath )
 	//var candleWiseDataObj = await fetchAndSaveDataIDB( docPath );
@@ -1823,57 +1954,15 @@ async function showLiveScannerAllStocksDataInTable()
 	var theadStr = '<thead class="tableRowClass">   <tr>      '
 	+'<th>Symbol</th>'
 	 
+	//+'<th>Fut Price</th>'
+	+'<th>ATM Strike</th>'
+	+' <th>Fut C%</th>'
+	+' <th>ATM IV</th>'
+	+' <th>IV Chg</th>'
+	+' <th>IVP</th>'
+	+' <th>PCR</th>'
+	+' <th>Vol Spike</th>'
 	
-	+' <th>c%</th>'
-	+' <th>Score_1m</th>'
-	+' <th>Candles</th>'
-	//+' <th>bodyWick_1m</th>'
-	+' <th>bodyPer</th>'
-	+' <th>bullish</th>'
-	+' <th>bearish</th>'
-	//+' <th>retracement</th>'
-	//+' <th>pullback</th>'
-	
-	+' <th>bullish%</th>'
-	+' <th>bearish%</th>'
-
-	+' <th>Score_5m</th>'
-	+' <th>Candles</th>'
-	//+' <th>bodyWick_5m</th>'
-	+' <th>bodyPer</th>'
-	+' <th>bullish</th>'
-	+' <th>bearish</th>'
-	//+' <th>retracement</th>'
-	//+' <th>pullback</th>'
-	
-	+' <th>bullish%</th>'
-	+' <th>bearish%</th>'
-
-	
-	+'<th>Ratio</th>'
-	+' <th>Agrsv</th>'
-	+' <th>Near HVP</th>'
-	+' <th>Near POC</th>'
-	+' <th>HVP</th>'
-	+' <th>POC</th>'
-	+' <th>LTP</th>'
-	+' <th>TimeHVP</th>'
-	+' <th>HVP Near High</th>'
-	+' <th>HVP Near Low</th>'
-	+' <th>SpreadTime</th>'
-	+' <th>SpreadRng</th>'
-	+' <th>SprdRng%</th>'
-	
-	+'<th>Symbol</th>'
-	
-	+' <th>LtstSpreadTime</th>'
-	+' <th>LtstSpreadRng</th>'
-	+' <th>LtstSprdRng%</th>'
-	
-	
-	+' <th>BuyChng</th>'
-	+' <th>SellChng</th>'
-	+' <th>C%_1m</th>'
 	
 	
 	//+'<th>Ratio%</th>   '
@@ -1882,7 +1971,7 @@ async function showLiveScannerAllStocksDataInTable()
 	//var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
 	 
 	
-	function returnDataStr( symbol, dataObj )
+	function returnDataStr_previous( symbol, dataObj )
 	{
 	
 		
@@ -1922,8 +2011,7 @@ async function showLiveScannerAllStocksDataInTable()
 		
 		largest_spread_price_range_time = spread_price_ranges[0].split('_')[1]
 		largest_spread_price_range = dataObj['price_ranges_data_obj'][ spread_price_ranges[0] ]['priceRange']
-		//largest_spread_price_range_percentage = Math.abs( ( ( Number( largest_spread_price_range.split('-')[0] ) - Number( largest_spread_price_range.split('-')[1] ) ) / Number( largest_spread_price_range.split('-')[1] ))*100 ).toFixed(2)
-		largest_spread_price_range_percentage = ( ( ( Number( largest_spread_price_range.split('-')[0] ) - Number( largest_spread_price_range.split('-')[1] ) ) / Number( largest_spread_price_range.split('-')[1] ))*100 ).toFixed(2)
+		largest_spread_price_range_percentage = Math.abs( ( ( Number( largest_spread_price_range.split('-')[0] ) - Number( largest_spread_price_range.split('-')[1] ) ) / Number( largest_spread_price_range.split('-')[1] ))*100 ).toFixed(2)
 	
 		
 		spread_price_ranges.sort((a, b) => {
@@ -1935,8 +2023,7 @@ async function showLiveScannerAllStocksDataInTable()
 		latest_spread_price_range_time = spread_price_ranges[0].split('_')[1]
 		latest_spread_price_range = dataObj['price_ranges_data_obj'][ spread_price_ranges[0] ]['priceRange']
 		
-		//latest_spread_price_range_percentage = Math.abs( ( ( Number( latest_spread_price_range.split('-')[0] ) - Number( latest_spread_price_range.split('-')[1] ) ) / Number( latest_spread_price_range.split('-')[1] ))*100 ).toFixed(2)
-		latest_spread_price_range_percentage = ( ( ( Number( latest_spread_price_range.split('-')[0] ) - Number( latest_spread_price_range.split('-')[1] ) ) / Number( latest_spread_price_range.split('-')[1] ))*100 ).toFixed(2)
+		latest_spread_price_range_percentage = Math.abs( ( ( Number( latest_spread_price_range.split('-')[0] ) - Number( latest_spread_price_range.split('-')[1] ) ) / Number( latest_spread_price_range.split('-')[1] ))*100 ).toFixed(2)
 	
 	}
 	
@@ -2091,6 +2178,182 @@ async function showLiveScannerAllStocksDataInTable()
 		
 		+'</td><td>'
 		+ ( pChange_total_1m )
+		
+	
+		
+				
+		/*
+		+'</td><td>'
+		+ dataObj['marketDeptOrderBook']['totalBuyQuantity'] 
+		+'</td><td>'
+		+ dataObj['marketDeptOrderBook']['totalSellQuantity']
+		+'</td><td>'
+		//+ dataObj['marketDeptOrderBook']['totalBuyQuantity'] + ' (' +(dataObj['marketDeptOrderBook']['totalBuyQuantity'] / (dataObj['marketDeptOrderBook']['totalBuyQuantity'] + dataObj['marketDeptOrderBook']['totalSellQuantity'] ) *100 ).toFixed(2) + ')' 
+		+ (dataObj['marketDeptOrderBook']['totalBuyQuantity'] / (dataObj['marketDeptOrderBook']['totalBuyQuantity'] + dataObj['marketDeptOrderBook']['totalSellQuantity'] ) *100 ).toFixed(2) 
+		+'</td><td>'
+		//+ dataObj['marketDeptOrderBook']['totalSellQuantity'] + ' (' +(dataObj['marketDeptOrderBook']['totalSellQuantity'] / (dataObj['marketDeptOrderBook']['totalBuyQuantity'] + dataObj['marketDeptOrderBook']['totalSellQuantity'] ) *100 ).toFixed(2) + ')' 
+		+ (dataObj['marketDeptOrderBook']['totalSellQuantity'] / (dataObj['marketDeptOrderBook']['totalBuyQuantity'] + dataObj['marketDeptOrderBook']['totalSellQuantity'] ) *100 ).toFixed(2)
+		//+'</td><td>'
+		*/
+		//+ ratioPercentage.toFixed(2)
+		+'</td></tr>'
+		
+		return tablesStr;
+	}
+
+	function returnDataStr( symbol, dataObj )
+	{
+
+
+	var expiries = Object.keys(dataObj['per_expiry_map']); // ['2025-08-28', '2025-09-30']
+	expiries.sort((a, b) => new Date(a) - new Date(b));    // Sort in descending order
+	var selected_expiry = expiries[0];                     // Latest expiry
+
+	//console.log('expiries', expiries, selected_expiry )
+	
+	console.log('dataObj', dataObj )
+	
+	var selected_expiry_data_obj = dataObj['per_expiry_map'][ selected_expiry ]
+	var underlying_base_stats_obj = dataObj['underlying_base_stats']
+	
+	//console.log('selected_expiry_data_obj', selected_expiry_data_obj )
+	//console.log('underlying_base_stats_obj', underlying_base_stats_obj )
+	
+	//per_expiry_pcr
+	var total_pcr = 0
+	
+	for( var expiry_date in underlying_base_stats_obj['per_expiry_pcr'] ) 
+	{
+		 total_pcr += underlying_base_stats_obj['per_expiry_pcr'][ expiry_date ]
+	}
+	
+		/*
+	var LTP_near_HighestVolBar_priceRange =  Math.abs(LastPrice - HighestVolBar_priceRange) / HighestVolBar_priceRange *100
+	var LTP_near_POC =  Math.abs(LastPrice - POC_Price) / POC_Price *100
+	
+	
+	var HighestVolBar_near_day_high =  Math.abs(day_high - HighestVolBar_candle_high) / HighestVolBar_candle_high *100
+	var HighestVolBar_near_day_low =  Math.abs(day_low - HighestVolBar_candle_low) / HighestVolBar_candle_low *100
+	
+	
+	
+	
+		var whoIsMoreAggressive = ''
+		var ratioPercentage = 0
+		if( dataObj['total_ask'] >= dataObj['total_bid'] )
+		{
+			//var percentage = (dataObj['marketDeptOrderBook']['totalBuyQuantity']-dataObj['marketDeptOrderBook']['totalSellQuantity']) / (dataObj['marketDeptOrderBook']['totalBuyQuantity']+dataObj['marketDeptOrderBook']['totalSellQuantity'])
+			whoIsMoreAggressive = 'Buy' 
+			//ratioPercentage = ((dataObj['total_ask']  - dataObj['total_bid'])/dataObj['total_bid'] )*100
+			ratioPercentage = dataObj['total_ask'] / dataObj['total_bid']
+		}
+		else if( dataObj['total_ask'] < dataObj['total_bid'] )
+		{
+			whoIsMoreAggressive = 'Sell'
+			ratioPercentage = dataObj['total_bid'] / dataObj['total_ask']
+		}
+		
+		var percentageChange = ( ( ( dataObj['LTP'] - dataObj['day_open'] ) / dataObj['day_open'] ) * 100 )
+*/
+	
+	
+		var tablesStr = '<tr class="item"><td>'
+		+ symbol
+	
+
+		if( false && dataObj['score_result_1m'] != undefined )
+		{
+		tablesStr += 
+		'</td><td>'
+		//+ dataObj['score_result_1m']['score']
+		+ percentageChange.toFixed(2)
+		 
+		+'</td><td>'
+		//+ dataObj['score_result_1m']['score']
+		//+ ( dataObj['score_result_1m']['num_consec'] * dataObj['score_result_1m']['body_per'] ).toFixed(2)
+		//+ Math.abs( percentageChange * dataObj['score_result_1m']['num_consec'] * dataObj['score_result_1m']['body_per']  ).toFixed(2)
+		+ Math.abs( percentageChange * dataObj['score_result_1m']['num_consec'] ).toFixed(2)
+		
+		+'</td><td>'
+		+ dataObj['score_result_1m']['num_consec']
+		
+		//+'</td><td>'
+		//+ dataObj['score_result_1m']['body_wick']
+		
+		+'</td><td>'
+		+ dataObj['score_result_1m']['body_per']
+		
+		+'</td><td>'
+		//+ dataObj['score_result_1m']['analyzed_candles']['max_consecutive_bullish']
+		+ dataObj['score_result_1m']['analyzed_candles']['max_valid_consecutive_bullish']
+		+'</td><td>'
+		+ dataObj['score_result_1m']['analyzed_candles']['max_valid_consecutive_bearish']
+		
+		+'</td><td>'
+		//+ dataObj['score_result_1m']['retracement']
+		+Math.abs( percentageChange * dataObj['score_result_1m']['analyzed_candles']['max_valid_consecutive_bullish'] ).toFixed(2)
+		
+		+'</td><td>'
+		//+ dataObj['score_result_1m']['pullback_depth']
+		+Math.abs( percentageChange * dataObj['score_result_1m']['analyzed_candles']['max_valid_consecutive_bearish'] ).toFixed(2)
+		
+		
+		
+		+'</td><td>'
+		//+ dataObj['score_result_5m']['score']
+		//+ ( dataObj['score_result_5m']['num_consec'] * dataObj['score_result_5m']['body_per'] ).toFixed(2)
+		//+Math.abs( percentageChange  * dataObj['score_result_5m']['num_consec'] * dataObj['score_result_5m']['body_per']   ).toFixed(2)
+		+Math.abs( percentageChange  * dataObj['score_result_5m']['num_consec'] ).toFixed(2)
+		
+		
+		+'</td><td>'
+		+ dataObj['score_result_5m']['num_consec']
+		
+		//+'</td><td>'
+		//+ dataObj['score_result_5m']['body_wick']
+		
+		+'</td><td>'
+		+ dataObj['score_result_5m']['body_per']
+		
+		+'</td><td>'
+		+ dataObj['score_result_5m']['analyzed_candles']['max_valid_consecutive_bullish']
+		+'</td><td>'
+		+ dataObj['score_result_5m']['analyzed_candles']['max_valid_consecutive_bearish']
+		
+		
+		+'</td><td>'
+		//+ dataObj['score_result_5m']['retracement']
+		+Math.abs( percentageChange * dataObj['score_result_5m']['analyzed_candles']['max_valid_consecutive_bullish'] ).toFixed(2)
+		
+		+'</td><td>'
+		//+ dataObj['score_result_5m']['pullback_depth']
+		+Math.abs( percentageChange  * dataObj['score_result_5m']['analyzed_candles']['max_valid_consecutive_bearish'] ).toFixed(2)
+		
+		
+		+'</td><td>'
+		}	
+	
+		tablesStr += 
+		'</td><td>'
+		+( selected_expiry_data_obj['atm_strike'] ? selected_expiry_data_obj['atm_strike'] : '' )
+		+'</td><td>'
+		+( selected_expiry_data_obj['future_change_percent'] ? selected_expiry_data_obj['future_change_percent'].toFixed(2) : '' )
+		
+		+'</td><td>'
+		+( selected_expiry_data_obj['atm_iv'] ?  ( selected_expiry_data_obj['atm_iv']*100 ).toFixed(2)  : '' )
+	
+		+'</td><td>'
+		+( selected_expiry_data_obj['atm_iv_change'] ?  ( selected_expiry_data_obj['atm_iv_change']*100 ).toFixed(2)  : '' )
+	
+		+'</td><td>'
+		+( selected_expiry_data_obj['atm_iv_percentile'] ?  ( selected_expiry_data_obj['atm_iv_percentile']*100 ).toFixed(2)  : '' )
+	
+		+'</td><td>'
+		+( underlying_base_stats_obj['total_pcr'] ? underlying_base_stats_obj['total_pcr'].toFixed(2) : '' )
+		//+( total_pcr ? total_pcr.toFixed(2) : '' )
+		+'</td><td>'
+		//+ underlying_base_stats_obj['volume_spike'].toFixed(2)
+		+( underlying_base_stats_obj['volume_spike'] ? underlying_base_stats_obj['volume_spike'].toFixed(2) : '' )
 		
 	
 		
