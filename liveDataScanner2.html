@@ -4544,7 +4544,9 @@ var functionStr ="addOnclickEvent();" + tableHead[j].getAttribute('onclick')
 }
 else
 {
-var functionStr = "document.getElementById('derivativesSymbols').value ='"+tableData.innerHTML+"';showPerticularStocksEquityDataInTable();document.getElementById('highest_ask_bid_orders_tick_wise_TableContainer').scrollIntoView();"
+//var functionStr = "document.getElementById('derivativesSymbols').value ='"+tableData.innerHTML+"';showPerticularStocksEquityDataInTable();document.getElementById('highest_ask_bid_orders_tick_wise_TableContainer').scrollIntoView();"
+var functionStr = "document.getElementById('derivativesSymbols').value ='"+tableData.innerHTML+"';showPerticularStocksEquityDataInTable();document.getElementById('sliderContainer').scrollIntoView();"
+	
 tableData.setAttribute('onclick', functionStr)
 }
 }
@@ -4632,3 +4634,4 @@ function tableSortAndPushData(tableHead,event)
 generateMonthYearFromDate( new Date("January 2025") );
 
 </script>
+
