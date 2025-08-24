@@ -187,6 +187,8 @@ function addEventListnerInTables()
     clearArrow();
 	var allTableInDocument = document.getElementsByTagName('table');
 	for (var table of allTableInDocument) {
+	if( table.getElementsByTagName('caption')[0]!=undefined )
+	{
 		table.getElementsByTagName('caption')[0].setAttribute('onclick', 'copyList(this)');
 		table.getElementsByTagName('caption')[0].setAttribute('oncontextmenu', 'copyTable(this); return false;');
 		//console.log( table.id ) 
@@ -194,6 +196,8 @@ function addEventListnerInTables()
     for (var th of ths) {
 	th.innerHTML = '<span>' + th.innerText +'<i class="caret"></i></span>'
 	th.setAttribute('onclick', 'tableSortAndPushData(this, event)')
+	}
+	
 	}
 	}
 	
