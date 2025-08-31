@@ -3548,16 +3548,18 @@ console.log(  "sorted_total_volume_profile_price_obj", sorted_total_volume_profi
 	
 		
 		
-	
+	console.log( "poc_prices_data_obj", poc_prices_data_obj )
 	var theadStr = '<thead class="tableRowClass">   <tr>      '
 	
-	+'<th>Price</th>'	//ask
-	+'<th>No.Times</th>' //bid
-	+'<th>TotAsk</th>' //bid
-	+'<th>TotBid</th>' //bid
-	+'<th>TotVol</th>' //bid
-	+'<th>No.Buys</th>' //bid
-	+'<th>No.Sells</th>' //bid
+	+'<th>Price</th>'
+	+'<th>No.Times</th>' 
+	+'<th>No.Buys</th>' 
+	+'<th>No.Sells</th>' 
+	+'<th>TotAsk</th>'
+	+'<th>TotBid</th>' 
+	+'<th>TotVol</th>' 
+	+'<th>Ratio</th>' 
+	
 	//+' <th>Data</th>'
 	
 	+' </tr></thead><tbody>'
@@ -3598,6 +3600,16 @@ console.log(  "sorted_total_volume_profile_price_obj", sorted_total_volume_profi
 		
 	}
 	
+	var ratioAskBid = 0
+	if(  specific_price_total_ask>specific_price_total_bid )
+	{
+		ratioAskBid = ( specific_price_total_ask / specific_price_total_bid ).toFixed(2)
+	}
+	else
+	{
+		ratioAskBid = ( specific_price_total_bid / specific_price_total_ask ).toFixed(2)
+	}
+	
 	//var priceRange = dataObj[ 'priceRange' ]
 	//var tick_difference = Number( ( Number( priceRange.split('-')[1] ) - Number( priceRange.split('-')[0] ) ).toFixed(2) )
 					
@@ -3609,15 +3621,18 @@ console.log(  "sorted_total_volume_profile_price_obj", sorted_total_volume_profi
 		+'</td><td>'
 		+ data_array.length
 		+'</td><td>'
+		+ number_of_times_buy
+		+'</td><td>'
+		+ number_of_times_sell
+		+'</td><td>'
 		+ specific_price_total_ask
 		+'</td><td>'
 		+ specific_price_total_bid
 		+'</td><td>'
 		+ ( specific_price_total_ask + specific_price_total_bid )
+		
 		+'</td><td>'
-		+ number_of_times_buy
-		+'</td><td>'
-		+ number_of_times_sell
+		+ ratioAskBid
 		
 		//+'</td><td>'
 		//+ dataObj['bid']
