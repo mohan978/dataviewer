@@ -404,6 +404,10 @@ Breakout Time Till: 		<select id="breakoutTimeTillSelector" >
 
 <div class="spaceBetweenTables">  	<div id="previousDayStructureHighLowBreakoutStocksTableContainer"></div> </div>
 
+<div class="spaceBetweenTables">  	<div id="insideCandlesRangeHighLowBreakoutStocksTableContainer"></div> </div>
+
+<div class="spaceBetweenTables">  	<div id="candleClosingsBasedScoreStocksTableContainer"></div> </div>
+
 
 <br><br>
   <div class="row">
@@ -2248,6 +2252,295 @@ async function showLiveScannerAllStocksDataInTable()
 	
 	//+'<th>Ratio%</th>   '
 	+' </tr></thead><tbody>'
+	var optMostActiveTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="latestSwingsWithoutBreakoutStocksTableStr"><caption style="caption-side:top"> Lastest Swings without Breakout | '+selectedTradingDate+' | '+timestamp+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	//var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	 
+	
+	function returnDataStr1( symbol, dataObj )
+	{
+	
+		
+	
+	 
+	 var LastPrice = dataObj['LTP']
+
+	var day_high = dataObj['day_high']
+	var day_low = dataObj['day_low']
+
+	var pChange_total_1m = 0
+
+
+		var percentageChange = ( ( ( dataObj['LTP'] - dataObj['day_open'] ) / dataObj['day_open'] ) * 100 )
+
+		var tablesStr = ''
+		//var tablesStr = '<tr class="item"><td>'
+		//+ symbol
+	
+		
+		if( dataObj['market_structure_5m'] && dataObj['market_structure_5m'].length > 1 )
+		{
+		//var last_swing_obj_5m = dataObj['market_structure_1m'][ dataObj['market_structure_1m'].length-1 ]
+		//var last_swing_obj_5m =   dataObj['market_structure_5m'] && dataObj['market_structure_5m'].length > 0    ? dataObj['market_structure_5m'][dataObj['market_structure_5m'].length - 1]    : {}; // or provide a default object like { time: null, type: null }
+		var last_swing_obj_5m =   dataObj['market_structure_5m'] && dataObj['market_structure_5m'].length > 1  ? dataObj['market_structure_5m'][dataObj['market_structure_5m'].length - 1]    : {}; // or provide a default object like { time: null, type: null }
+		
+		//console.log( symbol, last_swing_obj_5m )
+
+		
+		var breakoutTime = last_swing_obj_5m ['day_close_candle'][0]
+		//console.log( symbol, last_swing_obj_5m )
+		//if( breakoutTime==breakoutTimeSelectorValue || breakoutTimeSelectorValue== 'ALL')
+		if( (breakoutTime >=breakoutTimeSelectorValue && breakoutTime <=breakoutTimeTillSelectorValue) || breakoutTimeSelectorValue== 'ALL')
+		{
+		tablesStr += '<tr class="item"><td>'
+		+ symbol
+		+'</td><td>'
+		
+		+ ( ( ( dataObj['LTP'] -  last_swing_obj_5m ['day_close_candle'][4] ) / last_swing_obj_5m ['day_close_candle'][4] ) * 100 ).toFixed(2)
+		 +'</td><td>'
+		 
+		//+ last_swing_obj_5m['inside_candles']
+		+ ( last_swing_obj_5m['inside_candles']  ? last_swing_obj_5m['inside_candles']  : 0 )
+		
+		+'</td><td>'
+		//+ last_swing_obj_5m['trend']
+		+ ( last_swing_obj_5m['trend']  ? last_swing_obj_5m['trend']  : 'Null' )
+		
+		+'</td><td>'
+		+ ( last_swing_obj_5m['swing_high']  ? ( (last_swing_obj_5m['swing_high'] - last_swing_obj_5m['swing_low'])/last_swing_obj_5m['swing_low']*100 ).toFixed(2) : 'Null' )
+		+'</td><td>'
+		+ ( last_swing_obj_5m['swing_high']  ? ( (100-( (last_swing_obj_5m['swing_high'] - last_swing_obj_5m['swing_low'])/last_swing_obj_5m['swing_low']*100 )) * last_swing_obj_5m['inside_candles'] ) .toFixed(2) : 'Null' )
+		
+		
+		+'</td><td>'
+		+ ( dataObj['market_structure_5m'] ? dataObj['market_structure_5m'].length  : 0  )
+		 
+		+'</td><td>'
+		+ ( last_swing_obj_5m['start_candle'] ? last_swing_obj_5m ['start_candle'][0]  : ''  )
+	
+		+'</td><td>'
+		+ ( last_swing_obj_5m['day_close_candle'] ? last_swing_obj_5m ['day_close_candle'][0]  : ''  )
+	
+		+'</td><td>'
+		+ ( last_swing_obj_5m['day_close_candle'] ?( (  Math.abs(last_swing_obj_5m ['day_close_candle'][4] - last_swing_obj_5m ['day_close_candle'][1]) / (last_swing_obj_5m ['day_close_candle'][2] - last_swing_obj_5m ['day_close_candle'][3]))*100 ) .toFixed(2)    : ''  )
+	
+		+'</td><td>'
+		//+ dataObj['score_result_1m']['score']
+		+ percentageChange.toFixed(2)
+		 
+		//+'</td><td>'
+		+'</td></tr>'
+		}
+		}
+
+		if( false && dataObj['score_result_1m'] != undefined )
+		{
+		tablesStr += 
+		'</td><td>'
+		//+ dataObj['score_result_1m']['score']
+		+ percentageChange.toFixed(2)
+		 
+		+'</td><td>'
+		//+ dataObj['score_result_1m']['score']
+		//+ ( dataObj['score_result_1m']['num_consec'] * dataObj['score_result_1m']['body_per'] ).toFixed(2)
+		//+ Math.abs( percentageChange * dataObj['score_result_1m']['num_consec'] * dataObj['score_result_1m']['body_per']  ).toFixed(2)
+		+ Math.abs( percentageChange * dataObj['score_result_1m']['num_consec'] ).toFixed(2)
+		
+		+'</td><td>'
+		+ dataObj['score_result_1m']['num_consec']
+		
+		//+'</td><td>'
+		//+ dataObj['score_result_1m']['body_wick']
+		
+		+'</td><td>'
+		+ dataObj['score_result_1m']['body_per']
+		
+		+'</td><td>'
+		//+ dataObj['score_result_1m']['analyzed_candles']['max_consecutive_bullish']
+		+ dataObj['score_result_1m']['analyzed_candles']['max_valid_consecutive_bullish']
+		+'</td><td>'
+		+ dataObj['score_result_1m']['analyzed_candles']['max_valid_consecutive_bearish']
+		
+		+'</td><td>'
+		//+ dataObj['score_result_1m']['retracement']
+		+Math.abs( percentageChange * dataObj['score_result_1m']['analyzed_candles']['max_valid_consecutive_bullish'] ).toFixed(2)
+		
+		+'</td><td>'
+		//+ dataObj['score_result_1m']['pullback_depth']
+		+Math.abs( percentageChange * dataObj['score_result_1m']['analyzed_candles']['max_valid_consecutive_bearish'] ).toFixed(2)
+		
+		
+		
+		+'</td><td>'
+		//+ dataObj['score_result_5m']['score']
+		//+ ( dataObj['score_result_5m']['num_consec'] * dataObj['score_result_5m']['body_per'] ).toFixed(2)
+		//+Math.abs( percentageChange  * dataObj['score_result_5m']['num_consec'] * dataObj['score_result_5m']['body_per']   ).toFixed(2)
+		+Math.abs( percentageChange  * dataObj['score_result_5m']['num_consec'] ).toFixed(2)
+		
+		
+		+'</td><td>'
+		+ dataObj['score_result_5m']['num_consec']
+		
+		//+'</td><td>'
+		//+ dataObj['score_result_5m']['body_wick']
+		
+		+'</td><td>'
+		+ dataObj['score_result_5m']['body_per']
+		
+		+'</td><td>'
+		+ dataObj['score_result_5m']['analyzed_candles']['max_valid_consecutive_bullish']
+		+'</td><td>'
+		+ dataObj['score_result_5m']['analyzed_candles']['max_valid_consecutive_bearish']
+		
+		
+		+'</td><td>'
+		//+ dataObj['score_result_5m']['retracement']
+		+Math.abs( percentageChange * dataObj['score_result_5m']['analyzed_candles']['max_valid_consecutive_bullish'] ).toFixed(2)
+		
+		+'</td><td>'
+		//+ dataObj['score_result_5m']['pullback_depth']
+		+Math.abs( percentageChange  * dataObj['score_result_5m']['analyzed_candles']['max_valid_consecutive_bearish'] ).toFixed(2)
+		
+		
+		+'</td><td>'
+		}
+
+			
+		/*
+		tablesStr += 
+		//+'</td><td>'
+		+ratioPercentage.toFixed(2)
+		+'</td><td>'
+		+ whoIsMoreAggressive 
+		+'</td><td>'
+		+ LTP_near_HighestVolBar_priceRange.toFixed(3)
+		+'</td><td>'
+		+ LTP_near_POC.toFixed(3)
+		+'</td><td>'
+		+ HighestVolBar_priceRange
+		+'</td><td>'
+		+ POC_Price
+		+'</td><td>'
+		+ LastPrice
+		+'</td><td>'
+		+ HighestVolBar_time
+		+'</td><td>'
+		+ HighestVolBar_near_day_high.toFixed(3)
+		+'</td><td>'
+		+ HighestVolBar_near_day_low.toFixed(3)
+		+'</td><td>'
+		+ ( dataObj['total_ask'] - HighestVolBar_priceRange_total_ask )
+		+'</td><td>'
+		+ ( dataObj['total_bid'] - HighestVolBar_priceRange_total_bid )
+		
+		+'</td><td>'
+		+ ( pChange_total_1m )
+		*/
+		
+				
+		/*
+		+'</td><td>'
+		+ dataObj['marketDeptOrderBook']['totalBuyQuantity'] 
+		+'</td><td>'
+		+ dataObj['marketDeptOrderBook']['totalSellQuantity']
+		+'</td><td>'
+		//+ dataObj['marketDeptOrderBook']['totalBuyQuantity'] + ' (' +(dataObj['marketDeptOrderBook']['totalBuyQuantity'] / (dataObj['marketDeptOrderBook']['totalBuyQuantity'] + dataObj['marketDeptOrderBook']['totalSellQuantity'] ) *100 ).toFixed(2) + ')' 
+		+ (dataObj['marketDeptOrderBook']['totalBuyQuantity'] / (dataObj['marketDeptOrderBook']['totalBuyQuantity'] + dataObj['marketDeptOrderBook']['totalSellQuantity'] ) *100 ).toFixed(2) 
+		+'</td><td>'
+		//+ dataObj['marketDeptOrderBook']['totalSellQuantity'] + ' (' +(dataObj['marketDeptOrderBook']['totalSellQuantity'] / (dataObj['marketDeptOrderBook']['totalBuyQuantity'] + dataObj['marketDeptOrderBook']['totalSellQuantity'] ) *100 ).toFixed(2) + ')' 
+		+ (dataObj['marketDeptOrderBook']['totalSellQuantity'] / (dataObj['marketDeptOrderBook']['totalBuyQuantity'] + dataObj['marketDeptOrderBook']['totalSellQuantity'] ) *100 ).toFixed(2)
+		//+'</td><td>'
+		*/
+		//+ ratioPercentage.toFixed(2)
+		//+'</td></tr>'
+		//console.log( "tablesStr", tablesStr )
+		return tablesStr;
+	}
+
+	for( var i=0; i< Object.keys( candleWiseDataObj ).length ; i++ ) {
+	//for( var i=0; i< 50 ; i++ ) {
+	//var symbol = symbolStr.split('_')[0]
+	var symbol = Object.keys( candleWiseDataObj )[i]
+	
+	{
+
+		var dataObj = candleWiseDataObj [symbol]
+	
+		optMostActiveTablesStr +=	returnDataStr1( symbol, dataObj )
+
+	}
+	}
+	
+	optMostActiveTablesStr +=' </tbody> </table>    </div>  </div>'
+	//optOILosersTablesStr +=' </tbody> </table>    </div>  </div>'
+
+
+	
+	 document.getElementById('perticularEquityTableContainer').innerHTML = optMostActiveTablesStr;
+	 //document.getElementById('optPriceLosersTableContainer').innerHTML = optOILosersTablesStr;
+
+	
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
+	var theadStr = '<thead class="tableRowClass">   <tr>      '
+	+'<th>Symbol</th>'
+	 +' <th>Sgnl%</th>'
+	+' <th>Inside_Cndl</th>'
+	+' <th>Trend_5m</th>'
+	+' <th>Rng%_5m</th>'
+	+' <th>Rng*Cndl</th>'
+	+' <th>Swings</th>'
+	+' <th>StartT</th>'
+	+' <th>BreakoutT</th>'
+	+' <th>BreakoutStngh</th>'
+	
+	
+	+' <th>c%</th>'
+	
+	/*
+	+' <th>Score_1m</th>'
+	+' <th>Candles</th>'
+	//+' <th>bodyWick_1m</th>'
+	+' <th>bodyPer</th>'
+	+' <th>bullish</th>'
+	+' <th>bearish</th>'
+	//+' <th>retracement</th>'
+	//+' <th>pullback</th>'
+	
+	+' <th>bullish%</th>'
+	+' <th>bearish%</th>'
+
+	+' <th>Score_5m</th>'
+	+' <th>Candles</th>'
+	//+' <th>bodyWick_5m</th>'
+	+' <th>bodyPer</th>'
+	+' <th>bullish</th>'
+	+' <th>bearish</th>'
+	//+' <th>retracement</th>'
+	//+' <th>pullback</th>'
+	
+	+' <th>bullish%</th>'
+	+' <th>bearish%</th>'
+
+	
+	+'<th>Ratio</th>'
+	+' <th>Agrsv</th>'
+	+' <th>Near HVP</th>'
+	+' <th>Near POC</th>'
+	+' <th>HVP</th>'
+	+' <th>POC</th>'
+	+' <th>LTP</th>'
+	+' <th>TimeHVP</th>'
+	+' <th>HVP Near High</th>'
+	+' <th>HVP Near Low</th>'
+	
+	
+	+' <th>BuyChng</th>'
+	+' <th>SellChng</th>'
+	+' <th>C%_1m</th>'
+	*/
+	
+	//+'<th>Ratio%</th>   '
+	+' </tr></thead><tbody>'
 	var optMostActiveTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="breakoutStocksTableStr"><caption style="caption-side:top"> Last Breakout Stocks| '+selectedTradingDate+' | '+timestamp+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
 	//var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
 	 
@@ -2816,6 +3109,7 @@ async function showLiveScannerAllStocksDataInTable()
 	+' <th>Rng*Cndl</th>'
 	+' <th>Rng*Cndl*No.Brk</th>'
 	+' <th>No.Breaks</th>'
+	+' <th>No.Breaks*Sgnl%</th>'
 	
 	
 	/*
@@ -3010,6 +3304,9 @@ async function showLiveScannerAllStocksDataInTable()
 		
 		+'</td><td>'
 		+ (dataObj['high_low_breakout_continuation_structure_5m'].length)
+		
+		+'</td><td>'
+		+ ( dataObj['high_low_breakout_continuation_structure_5m'].length * Number( singnal_per_change ) ).toFixed(2) 
 		 
 		//+'</td><td>'
 		+'</td></tr>'
@@ -3169,6 +3466,7 @@ async function showLiveScannerAllStocksDataInTable()
 	+'<th>Symbol</th>'
 	+'<th>No.Break</th>'
 	+'<th>Score</th>'
+	+'<th>Score2</th>'
 	+'<th>TimeDiff</th>'
 	+' <th>%Chng/Range</th>'
 	+' <th>Chng%Ratio</th>'
@@ -3311,6 +3609,10 @@ async function showLiveScannerAllStocksDataInTable()
 		+'</td><td>'
 		
 		+ (  percentageChange * dataObj['high_low_breakout_continuation_structure_5m'].length).toFixed(2)
+		//+ (  percentageChange * dataObj['high_low_breakout_continuation_structure_5m'].length * last_swing_obj_5m['avg_pChange'] ).toFixed(2)
+		+'</td><td>'
+		
+		+ ( last_swing_obj_5m['trend'] =='Bullish' ?  ( dataObj['high_low_breakout_continuation_structure_5m'].length *  ( ( dataObj['day_high'] -  last_swing_obj_5m ['breakout_candle'][4] ) / last_swing_obj_5m ['breakout_candle'][4] ) * 100 ).toFixed(2) :  ( dataObj['high_low_breakout_continuation_structure_5m'].length *  ( ( dataObj['day_low'] -  last_swing_obj_5m ['breakout_candle'][4] ) / last_swing_obj_5m ['breakout_candle'][4] ) * 100 ).toFixed(2) )
 		+'</td><td>'
 		
 		+ ( last_swing_obj_5m_previous ? Math.abs(( diffMins(last_swing_obj_5m_previous['breakout_candle'][0], last_swing_obj_5m['breakout_candle'][0]) ) / 5 ) : '' )
@@ -3546,7 +3848,7 @@ async function showLiveScannerAllStocksDataInTable()
 	+' <th>PD_Swing_Rng</th>'
 	+' <th>PD_Rng</th>'
 	+'<th>Symbol</th>'
-	
+	+' <th>PD_Swng*No.Brks*PChng </th>'
 	
 	/*
 	+' <th>Score_1m</th>'
@@ -3778,6 +4080,13 @@ async function showLiveScannerAllStocksDataInTable()
 		+'</td><td>'
 		+ symbol
 		 
+		+'</td><td>'
+		+ ( percentageChange * dataObj['high_low_breakout_continuation_structure_5m'].length * PD_lastSwing['inside_candles']  ) .toFixed(2)
+		
+		 
+		//+'</td><td>'
+		//+ symbol
+		 
 		//+'</td><td>'
 		+'</td></tr>'
 		}
@@ -3928,6 +4237,926 @@ async function showLiveScannerAllStocksDataInTable()
 
 	
 	 document.getElementById('previousDayStructureHighLowBreakoutStocksTableContainer').innerHTML = optMostActiveTablesStr;
+	
+	
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
+	var theadStr = '<thead class="tableRowClass">   <tr>      '
+	+'<th>Symbol</th>'
+	+' <th>%Chng/Range</th>'
+	+' <th>Chng%Ratio</th>'
+	+' <th>BreakoutT</th>'
+	//+' <th>ContinueT</th>'
+	
+	+' <th>Trend_5m</th>'
+	
+	
+	+' <th>BreakoutStngh</th>'
+	
+	+' <th>Avg_Rng</th>'
+	+' <th>Avg_pChng</th>'
+	//+' <th>Score</th>'
+	
+	+' <th>c%</th>'
+	+' <th>Sgnl%</th>'
+	+' <th>Score</th>'
+	+' <th>SwingRng</th>'
+	+' <th>Candles</th>'
+	+' <th>Rng*Cndl</th>'
+	+' <th>Rng*Cndl*No.Brk</th>'
+	+' <th>Score_PD</th>'
+	+' <th>No.Breaks</th>'
+	+' <th>CurrRng</th>'
+	+' <th>PD_Swing</th>'
+	+' <th>PD_Swing_Rng</th>'
+	+' <th>PD_Rng</th>'
+	+'<th>Symbol</th>'
+	
+	
+	/*
+	+' <th>Score_1m</th>'
+	+' <th>Candles</th>'
+	//+' <th>bodyWick_1m</th>'
+	+' <th>bodyPer</th>'
+	+' <th>bullish</th>'
+	+' <th>bearish</th>'
+	//+' <th>retracement</th>'
+	//+' <th>pullback</th>'
+	
+	+' <th>bullish%</th>'
+	+' <th>bearish%</th>'
+
+	+' <th>Score_5m</th>'
+	+' <th>Candles</th>'
+	//+' <th>bodyWick_5m</th>'
+	+' <th>bodyPer</th>'
+	+' <th>bullish</th>'
+	+' <th>bearish</th>'
+	//+' <th>retracement</th>'
+	//+' <th>pullback</th>'
+	
+	+' <th>bullish%</th>'
+	+' <th>bearish%</th>'
+
+	
+	+'<th>Ratio</th>'
+	+' <th>Agrsv</th>'
+	+' <th>Near HVP</th>'
+	+' <th>Near POC</th>'
+	+' <th>HVP</th>'
+	+' <th>POC</th>'
+	+' <th>LTP</th>'
+	+' <th>TimeHVP</th>'
+	+' <th>HVP Near High</th>'
+	+' <th>HVP Near Low</th>'
+	
+	
+	+' <th>BuyChng</th>'
+	+' <th>SellChng</th>'
+	+' <th>C%_1m</th>'
+	*/
+	
+	//+'<th>Ratio%</th>   '
+	+' </tr></thead><tbody>'
+	var optMostActiveTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="insideRangeHighLowBreakoutStocksTableStr"><caption style="caption-side:top"> Inside Range High Low Breakout Stocks| '+selectedTradingDate+' | '+timestamp+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	//var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	 
+	
+	function returnDataStr7( symbol, dataObj )
+	{
+	
+		
+	
+	 
+	 var LastPrice = dataObj['LTP']
+	
+	
+	var day_high = dataObj['day_high']
+	var day_low = dataObj['day_low']
+	
+	var pChange_total_1m = 0
+	
+	
+	
+		var percentageChange = ( ( ( dataObj['LTP'] - dataObj['day_open'] ) / dataObj['day_open'] ) * 100 )
+		var dayRange = Math.abs( ( ( ( day_high-day_low ) / day_low ) * 100).toFixed(3) )
+
+
+		
+		var tablesStr = ''
+		//var tablesStr = '<tr class="item"><td>'
+		//+ symbol
+	
+		
+		if( dataObj['inside_candles_range_breakouts_5m'] && Object.keys(dataObj['inside_candles_range_breakouts_5m']).length > 0 )
+		{
+		
+		/*
+		var market_structure_selected_timeFrame_array = dataObj['market_structure_5m']
+		var highestConsolidation_index = 0
+		var highestConsolidation_candles = 0
+		
+		for( var i=0;i<=market_structure_selected_timeFrame_array.length-2;i++)
+		{
+			if( market_structure_selected_timeFrame_array[i]['inside_candles'] > highestConsolidation_candles )
+			{
+				highestConsolidation_candles = market_structure_selected_timeFrame_array[i]['inside_candles'] 
+				highestConsolidation_index = i
+			}
+		}
+		
+		
+		//var last_swing_obj_5m = dataObj['market_structure_1m'][ dataObj['market_structure_1m'].length-1 ]
+		//var last_swing_obj_5m =   dataObj['market_structure_5m'] && dataObj['market_structure_5m'].length > 0    ? dataObj['market_structure_5m'][dataObj['market_structure_5m'].length - 1]    : {}; // or provide a default object like { time: null, type: null }
+		//var last_swing_obj_5m =   dataObj['market_structure_5m'] && dataObj['market_structure_5m'].length > 1  ? dataObj['market_structure_5m'][dataObj['market_structure_5m'].length - 2]    : {}; // or provide a default object like { time: null, type: null }
+		var last_swing_obj_5m =   market_structure_selected_timeFrame_array && market_structure_selected_timeFrame_array.length > 1  ? market_structure_selected_timeFrame_array[ highestConsolidation_index ]   : {}; // or provide a default object like { time: null, type: null }
+		
+		*/
+		
+		
+		//var last_swing_obj_5m = dataObj['market_structure_1m'][ dataObj['market_structure_1m'].length-1 ]
+		//var last_swing_obj_5m =   dataObj['market_structure_5m'] && dataObj['market_structure_5m'].length > 0    ? dataObj['market_structure_5m'][dataObj['market_structure_5m'].length - 1]    : {}; // or provide a default object like { time: null, type: null }
+		//var last_swing_obj_5m =   dataObj['market_structure_5m'] && dataObj['market_structure_5m'].length > 1  ? dataObj['market_structure_5m'][dataObj['market_structure_5m'].length - 2]    : {}; // or provide a default object like { time: null, type: null }
+		//var last_swing_obj_5m =   market_structure_selected_timeFrame_array && market_structure_selected_timeFrame_array.length > 1  ? market_structure_selected_timeFrame_array[ highestConsolidation_index ]   : {}; // or provide a default object like { time: null, type: null }
+		//var last_swing_obj_5m =  dataObj['inside_candles_range_breakouts_5m'] ['high_low_breakout'] [0]  // or provide a default object like { time: null, type: null }
+		var last_swing_obj_5m =  dataObj['inside_candles_range_breakouts_5m'] ['open_close_breakout'] [0]  // or provide a default object like { time: null, type: null }
+		//var last_swing_obj_5m =  dataObj['high_low_breakout_continuation_structure_5m'] [ dataObj['high_low_breakout_continuation_structure_5m'].length-1 ]  // or provide a default object like { time: null, type: null }
+		//console.log(last_swing_obj_5m )
+		if( last_swing_obj_5m && last_swing_obj_5m['breakout_candle'] )
+		{
+		var breakoutTime = last_swing_obj_5m['breakout_candle'][0]
+		
+		var breakoutType = last_swing_obj_5m['trend']
+	/*
+		//var market_structure_5m_last_swing_obj = dataObj['market_structure_1m'][ dataObj['market_structure_1m'].length-1 ]
+		var market_structure_5m_last_swing_obj =   dataObj['market_structure_5m'] && dataObj['market_structure_5m'].length > 0    ? dataObj['market_structure_5m'][dataObj['market_structure_5m'].length - 1]    : {}; // or provide a default object like { time: null, type: null }
+		//var market_structure_5m_last_swing_obj =   dataObj['market_structure_5m'] && dataObj['market_structure_5m'].length > 1  ? dataObj['market_structure_5m'][dataObj['market_structure_5m'].length - 2]    : {}; // or provide a default object like { time: null, type: null }
+		
+		var singnal_per_change =  ( last_swing_obj_5m['trend'] =='Bullish' ?  ( ( ( dataObj['day_high'] -  last_swing_obj_5m ['breakout_candle'][4] ) / last_swing_obj_5m ['breakout_candle'][4] ) * 100 ).toFixed(2) :  ( ( ( dataObj['day_low'] -  last_swing_obj_5m ['breakout_candle'][4] ) / last_swing_obj_5m ['breakout_candle'][4] ) * 100 ).toFixed(2) )
+		
+		
+        var [PD_time, PD_open, PD_high, PD_low, PD_close, PD_volume] = last_swing_obj_5m['PD_dataObj']['DailyCandle'][0]
+        
+		var PD_Range = Math.abs( ( ( ( PD_high - PD_low ) / PD_low ) * 100).toFixed(3) )
+		
+		var PD_lastSwing =  last_swing_obj_5m['PD_dataObj']['PD_lastSwing']
+		var PD_lastSwing_Range = Math.abs( ( ( ( PD_lastSwing['swing_high'] - PD_lastSwing['swing_low'] ) / PD_lastSwing['swing_low'] ) * 100).toFixed(3) )
+		
+		*/
+		//console.log( symbol, last_swing_obj_5m )
+		//if( breakoutTime==breakoutTimeSelectorValue || breakoutTimeSelectorValue== 'ALL')
+		if( (breakoutTime >=breakoutTimeSelectorValue && breakoutTime <=breakoutTimeTillSelectorValue) || breakoutTimeSelectorValue== 'ALL')
+		//if( ( ( breakoutTypeSelectorValue == breakoutType || 'ALL' == breakoutTypeSelectorValue ) &&  (breakoutTime >=breakoutTimeSelectorValue && breakoutTime <=breakoutTimeTillSelectorValue) )
+		//|| (( breakoutTypeSelectorValue == breakoutType || 'ALL' == breakoutTypeSelectorValue ) && breakoutTimeSelectorValue== 'ALL' ) )
+		
+		{
+
+
+		
+		tablesStr += '<tr class="item"><td>'
+		+ symbol
+		+'</td><td>'
+	
+		//+ ( last_swing_obj_5m['avg_range_%'] ?( ( (  Math.abs(last_swing_obj_5m ['breakout_candle'][4] - last_swing_obj_5m ['breakout_candle'][1]) / ( last_swing_obj_5m ['breakout_candle'][1]))*100 ) / last_swing_obj_5m['avg_range_%'] ).toFixed(2)    : ''  )
+		
+		
+		//+'</td><td>'
+		//+ ( last_swing_obj_5m['avg_pChange'] ?  Math.abs(( ( (  Math.abs(last_swing_obj_5m ['breakout_candle'][4] - last_swing_obj_5m ['breakout_candle'][1]) / ( last_swing_obj_5m ['breakout_candle'][1]))*100 ) / last_swing_obj_5m['avg_pChange'] ) * percentageChange ).toFixed(2)    : ''  )
+		
+		//+'</td><td>'
+		
+		//+ last_swing_obj_5m['inside_candles']
+		+ ( last_swing_obj_5m['start_candle']  ? last_swing_obj_5m['start_candle'][0] : '' )
+		+'</td><td>'
+		 
+		//+ last_swing_obj_5m['inside_candles']
+		+ ( last_swing_obj_5m['breakout_candle']  ? last_swing_obj_5m['breakout_candle'][0] : '' )
+		+'</td><td>'
+		 
+		//+ last_swing_obj_5m['inside_candles']
+		//+ ( last_swing_obj_5m['continuation_candle']  ? last_swing_obj_5m['continuation_candle'][0] : '' )
+		//+'</td><td>'
+		
+		+ ( last_swing_obj_5m['trend']  ? last_swing_obj_5m['trend'] : 0 )
+	
+		
+		//+'</td><td>'
+		//+ ( last_swing_obj_5m['start_candle'] ? last_swing_obj_5m['start_candle'][0]  : ''  )
+	
+		//+'</td><td>'
+		//+ ( last_swing_obj_5m['day_close_candle'] ? last_swing_obj_5m ['day_close_candle'][0]  : ''  )
+		
+		
+		+'</td><td>'
+		+ ( last_swing_obj_5m['breakout_candle'] ?( (  Math.abs(last_swing_obj_5m ['breakout_candle'][4] - last_swing_obj_5m ['breakout_candle'][1]) / (last_swing_obj_5m ['breakout_candle'][2] - last_swing_obj_5m ['breakout_candle'][3]))*100 ) .toFixed(2)    : ''  )
+	
+	
+		//+'</td><td>'
+		//+ ( last_swing_obj_5m['avg_range_%'] ?(  last_swing_obj_5m['avg_range_%'] ).toFixed(2)    : ''  )
+	
+		//+'</td><td>'
+		//+ ( last_swing_obj_5m['avg_pChange'] ?(  last_swing_obj_5m['avg_pChange'] ).toFixed(2)    : ''  )
+	
+		+'</td><td>'
+		//+ dataObj['score_result_1m']['score']
+		+ percentageChange.toFixed(2)
+		
+		//+'</td><td>'
+		//+ dataObj['score_result_1m']['score']
+		//+ ( last_swing_obj_5m['trend'] =='Bullish' ?  ( ( ( dataObj['day_high'] -  last_swing_obj_5m ['breakout_candle'][4] ) / last_swing_obj_5m ['breakout_candle'][4] ) * 100 ).toFixed(2) :  ( ( ( dataObj['day_low'] -  last_swing_obj_5m ['breakout_candle'][4] ) / last_swing_obj_5m ['breakout_candle'][4] ) * 100 ).toFixed(2) )
+		
+		 
+		//+'</td><td>'
+		//+ dataObj['score_result_1m']['score']
+		//+ ( last_swing_obj_5m['trend'] =='Bullish' ?  (( ( ( dataObj['day_high'] -  last_swing_obj_5m ['breakout_candle'][4] ) / last_swing_obj_5m ['breakout_candle'][4] ) * 100 ) * dataObj['high_low_breakout_continuation_structure_5m'].length).toFixed(2) :  (( ( ( dataObj['day_low'] -  last_swing_obj_5m ['breakout_candle'][4] ) / last_swing_obj_5m ['breakout_candle'][4] ) * 100 ) * dataObj['high_low_breakout_continuation_structure_5m'].length).toFixed(2) )
+		
+		 
+		//+'</td><td>'
+		//+ ( market_structure_5m_last_swing_obj['swing_high']  ? ( (market_structure_5m_last_swing_obj['swing_high'] - market_structure_5m_last_swing_obj['swing_low'])/market_structure_5m_last_swing_obj['swing_low']*100 ).toFixed(2) : 'Null' )
+		
+		 
+		+'</td><td>'
+		+ ( last_swing_obj_5m['inside_candles']  ? last_swing_obj_5m['inside_candles'] : '0' )
+		
+		//+'</td><td>'
+		//+ ( market_structure_5m_last_swing_obj['swing_high']  ? ( (100-( (market_structure_5m_last_swing_obj['swing_high'] - market_structure_5m_last_swing_obj['swing_low'])/market_structure_5m_last_swing_obj['swing_low']*100 )) * market_structure_5m_last_swing_obj['inside_candles'] ) .toFixed(2) : 'Null' )
+		//+ ( market_structure_5m_last_swing_obj['swing_high']  ? ( (100-( (market_structure_5m_last_swing_obj['swing_high'] - market_structure_5m_last_swing_obj['swing_low'])/market_structure_5m_last_swing_obj['swing_low']*100 )) * market_structure_5m_last_swing_obj['inside_candles'] * Number( singnal_per_change ) ) .toFixed(2) : 'Null' )
+		// +( market_structure_5m_last_swing_obj['swing_high']  ? ( (100-( (market_structure_5m_last_swing_obj['swing_high'] - market_structure_5m_last_swing_obj['swing_low'])/market_structure_5m_last_swing_obj['swing_low']*100 )) * (dataObj['high_low_breakout_continuation_structure_5m'].length) ) .toFixed(2) : 'Null' )
+		 
+		//+'</td><td>'
+		 //+( market_structure_5m_last_swing_obj['swing_high']  ? ( (100-( (market_structure_5m_last_swing_obj['swing_high'] - market_structure_5m_last_swing_obj['swing_low'])/market_structure_5m_last_swing_obj['swing_low']*100 )) * market_structure_5m_last_swing_obj['inside_candles'] *  (dataObj['high_low_breakout_continuation_structure_5m'].length) ) .toFixed(2) : 'Null' )
+		
+		//+'</td><td>'
+		 //+( market_structure_5m_last_swing_obj['swing_high']  ? ( (100-( (market_structure_5m_last_swing_obj['swing_high'] - market_structure_5m_last_swing_obj['swing_low'])/market_structure_5m_last_swing_obj['swing_low']*100 )) * market_structure_5m_last_swing_obj['inside_candles'] *  (dataObj['high_low_breakout_continuation_structure_5m'].length) *  (100 - PD_Range)  ) .toFixed(2) : 'Null' )
+		
+		//BELOW IS BEST
+		// +( market_structure_5m_last_swing_obj['swing_high']  ? ( (100-( (market_structure_5m_last_swing_obj['swing_high'] - market_structure_5m_last_swing_obj['swing_low'])/market_structure_5m_last_swing_obj['swing_low']*100 )) * (dataObj['high_low_breakout_continuation_structure_5m'].length) *  (100 - PD_Range) ) .toFixed(2) : 'Null' )
+		 
+		 
+		 //+( market_structure_5m_last_swing_obj['swing_high']  ? ( (100-( (market_structure_5m_last_swing_obj['swing_high'] - market_structure_5m_last_swing_obj['swing_low'])/market_structure_5m_last_swing_obj['swing_low']*100 )) * (dataObj['high_low_breakout_continuation_structure_5m'].length) *  (100 - PD_Range) *  (PD_lastSwing['inside_candles']) ) .toFixed(2) : 'Null' )
+		 //+( market_structure_5m_last_swing_obj['swing_high']  ? (  (dataObj['high_low_breakout_continuation_structure_5m'].length) *  (100 - dayRange) *  (100 - PD_lastSwing_Range) * PD_lastSwing['inside_candles'] * Math.abs(( ( (  Math.abs(last_swing_obj_5m ['breakout_candle'][4] - last_swing_obj_5m ['breakout_candle'][1]) / ( last_swing_obj_5m ['breakout_candle'][1]))*100 ) / last_swing_obj_5m['avg_pChange'] ) * percentageChange ) ) .toFixed(2) : 'Null' )
+		 
+		
+		//+'</td><td>'
+		//+ (dataObj['high_low_breakout_continuation_structure_5m'].length)
+		 /*
+		+'</td><td>'
+		+ dayRange
+		 
+		+'</td><td>'
+		+ PD_lastSwing['inside_candles']
+		 
+		+'</td><td>'
+		+ PD_lastSwing_Range
+		
+		+'</td><td>'
+		+ PD_Range
+		 
+		+'</td><td>'
+		+ symbol
+		 */
+		 
+		//+'</td><td>'
+		+'</td></tr>'
+		}
+		
+		}
+		}
+
+		if( false && dataObj['score_result_1m'] != undefined )
+		{
+		tablesStr += 
+		'</td><td>'
+		//+ dataObj['score_result_1m']['score']
+		+ percentageChange.toFixed(2)
+		 
+		+'</td><td>'
+		//+ dataObj['score_result_1m']['score']
+		//+ ( dataObj['score_result_1m']['num_consec'] * dataObj['score_result_1m']['body_per'] ).toFixed(2)
+		//+ Math.abs( percentageChange * dataObj['score_result_1m']['num_consec'] * dataObj['score_result_1m']['body_per']  ).toFixed(2)
+		+ Math.abs( percentageChange * dataObj['score_result_1m']['num_consec'] ).toFixed(2)
+		
+		+'</td><td>'
+		+ dataObj['score_result_1m']['num_consec']
+		
+		//+'</td><td>'
+		//+ dataObj['score_result_1m']['body_wick']
+		
+		+'</td><td>'
+		+ dataObj['score_result_1m']['body_per']
+		
+		+'</td><td>'
+		//+ dataObj['score_result_1m']['analyzed_candles']['max_consecutive_bullish']
+		+ dataObj['score_result_1m']['analyzed_candles']['max_valid_consecutive_bullish']
+		+'</td><td>'
+		+ dataObj['score_result_1m']['analyzed_candles']['max_valid_consecutive_bearish']
+		
+		+'</td><td>'
+		//+ dataObj['score_result_1m']['retracement']
+		+Math.abs( percentageChange * dataObj['score_result_1m']['analyzed_candles']['max_valid_consecutive_bullish'] ).toFixed(2)
+		
+		+'</td><td>'
+		//+ dataObj['score_result_1m']['pullback_depth']
+		+Math.abs( percentageChange * dataObj['score_result_1m']['analyzed_candles']['max_valid_consecutive_bearish'] ).toFixed(2)
+		
+		
+		
+		+'</td><td>'
+		//+ dataObj['score_result_5m']['score']
+		//+ ( dataObj['score_result_5m']['num_consec'] * dataObj['score_result_5m']['body_per'] ).toFixed(2)
+		//+Math.abs( percentageChange  * dataObj['score_result_5m']['num_consec'] * dataObj['score_result_5m']['body_per']   ).toFixed(2)
+		+Math.abs( percentageChange  * dataObj['score_result_5m']['num_consec'] ).toFixed(2)
+		
+		
+		+'</td><td>'
+		+ dataObj['score_result_5m']['num_consec']
+		
+		//+'</td><td>'
+		//+ dataObj['score_result_5m']['body_wick']
+		
+		+'</td><td>'
+		+ dataObj['score_result_5m']['body_per']
+		
+		+'</td><td>'
+		+ dataObj['score_result_5m']['analyzed_candles']['max_valid_consecutive_bullish']
+		+'</td><td>'
+		+ dataObj['score_result_5m']['analyzed_candles']['max_valid_consecutive_bearish']
+		
+		
+		+'</td><td>'
+		//+ dataObj['score_result_5m']['retracement']
+		+Math.abs( percentageChange * dataObj['score_result_5m']['analyzed_candles']['max_valid_consecutive_bullish'] ).toFixed(2)
+		
+		+'</td><td>'
+		//+ dataObj['score_result_5m']['pullback_depth']
+		+Math.abs( percentageChange  * dataObj['score_result_5m']['analyzed_candles']['max_valid_consecutive_bearish'] ).toFixed(2)
+		
+		
+		+'</td><td>'
+		}
+
+			
+		/*
+		tablesStr += 
+		//+'</td><td>'
+		+ratioPercentage.toFixed(2)
+		+'</td><td>'
+		+ whoIsMoreAggressive 
+		+'</td><td>'
+		+ LTP_near_HighestVolBar_priceRange.toFixed(3)
+		+'</td><td>'
+		+ LTP_near_POC.toFixed(3)
+		+'</td><td>'
+		+ HighestVolBar_priceRange
+		+'</td><td>'
+		+ POC_Price
+		+'</td><td>'
+		+ LastPrice
+		+'</td><td>'
+		+ HighestVolBar_time
+		+'</td><td>'
+		+ HighestVolBar_near_day_high.toFixed(3)
+		+'</td><td>'
+		+ HighestVolBar_near_day_low.toFixed(3)
+		+'</td><td>'
+		+ ( dataObj['total_ask'] - HighestVolBar_priceRange_total_ask )
+		+'</td><td>'
+		+ ( dataObj['total_bid'] - HighestVolBar_priceRange_total_bid )
+		
+		+'</td><td>'
+		+ ( pChange_total_1m )
+		*/
+		
+				
+		/*
+		+'</td><td>'
+		+ dataObj['marketDeptOrderBook']['totalBuyQuantity'] 
+		+'</td><td>'
+		+ dataObj['marketDeptOrderBook']['totalSellQuantity']
+		+'</td><td>'
+		//+ dataObj['marketDeptOrderBook']['totalBuyQuantity'] + ' (' +(dataObj['marketDeptOrderBook']['totalBuyQuantity'] / (dataObj['marketDeptOrderBook']['totalBuyQuantity'] + dataObj['marketDeptOrderBook']['totalSellQuantity'] ) *100 ).toFixed(2) + ')' 
+		+ (dataObj['marketDeptOrderBook']['totalBuyQuantity'] / (dataObj['marketDeptOrderBook']['totalBuyQuantity'] + dataObj['marketDeptOrderBook']['totalSellQuantity'] ) *100 ).toFixed(2) 
+		+'</td><td>'
+		//+ dataObj['marketDeptOrderBook']['totalSellQuantity'] + ' (' +(dataObj['marketDeptOrderBook']['totalSellQuantity'] / (dataObj['marketDeptOrderBook']['totalBuyQuantity'] + dataObj['marketDeptOrderBook']['totalSellQuantity'] ) *100 ).toFixed(2) + ')' 
+		+ (dataObj['marketDeptOrderBook']['totalSellQuantity'] / (dataObj['marketDeptOrderBook']['totalBuyQuantity'] + dataObj['marketDeptOrderBook']['totalSellQuantity'] ) *100 ).toFixed(2)
+		//+'</td><td>'
+		*/
+		//+ ratioPercentage.toFixed(2)
+		//+'</td></tr>'
+		//console.log( "tablesStr", tablesStr )
+		return tablesStr;
+	}
+
+	for( var i=0; i< Object.keys( candleWiseDataObj ).length ; i++ ) {
+	//for( var i=0; i< 50 ; i++ ) {
+	//var symbol = symbolStr.split('_')[0]
+	var symbol = Object.keys( candleWiseDataObj )[i]
+
+	{
+
+		var dataObj = candleWiseDataObj [symbol]
+	
+		optMostActiveTablesStr +=	returnDataStr7( symbol, dataObj )
+
+	}
+	}
+	
+	optMostActiveTablesStr +=' </tbody> </table>    </div>  </div>'
+	//optOILosersTablesStr +=' </tbody> </table>    </div>  </div>'
+
+
+	
+	 document.getElementById('insideCandlesRangeHighLowBreakoutStocksTableContainer').innerHTML = optMostActiveTablesStr;
+	
+	
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
+	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
+	var theadStr = '<thead class="tableRowClass">   <tr>      '
+	+'<th>Symbol</th>'
+	//+' <th>%Chng/Range</th>'
+	//+' <th>Chng%Ratio</th>'
+	//+' <th>BreakoutT</th>'
+	//+' <th>ContinueT</th>'
+	
+	+' <th>c%</th>'
+	
+	+' <th>Trend_5m</th>'
+	+' <th>Trend_Ratio</th>'
+	
+	
+	+' <th>bullScore</th>'
+	+' <th>bearScore</th>'
+	
+	+' <th>breakDayHigh</th>'
+	+' <th>breakDayLow</th>'
+	
+	+' <th>greenBreakHigh</th>'
+	+' <th>redBreakLow</th>'
+	
+	+' <th>closeAbovePrevClose</th>'
+	+' <th>closeBelowPrevClose</th>'
+	
+	
+	
+	+' <th>cumulativeBullPct</th>'
+	+' <th>cumulativeBearPct</th>'
+	
+	+' <th>pChng_Ratio</th>'
+	
+	//+' <th>Avg_Rng</th>'
+	//+' <th>Avg_pChng</th>'
+	//+' <th>Score</th>'
+	
+	
+	
+	
+	/*
+	+' <th>Score_1m</th>'
+	+' <th>Candles</th>'
+	//+' <th>bodyWick_1m</th>'
+	+' <th>bodyPer</th>'
+	+' <th>bullish</th>'
+	+' <th>bearish</th>'
+	//+' <th>retracement</th>'
+	//+' <th>pullback</th>'
+	
+	+' <th>bullish%</th>'
+	+' <th>bearish%</th>'
+
+	+' <th>Score_5m</th>'
+	+' <th>Candles</th>'
+	//+' <th>bodyWick_5m</th>'
+	+' <th>bodyPer</th>'
+	+' <th>bullish</th>'
+	+' <th>bearish</th>'
+	//+' <th>retracement</th>'
+	//+' <th>pullback</th>'
+	
+	+' <th>bullish%</th>'
+	+' <th>bearish%</th>'
+
+	
+	+'<th>Ratio</th>'
+	+' <th>Agrsv</th>'
+	+' <th>Near HVP</th>'
+	+' <th>Near POC</th>'
+	+' <th>HVP</th>'
+	+' <th>POC</th>'
+	+' <th>LTP</th>'
+	+' <th>TimeHVP</th>'
+	+' <th>HVP Near High</th>'
+	+' <th>HVP Near Low</th>'
+	
+	
+	+' <th>BuyChng</th>'
+	+' <th>SellChng</th>'
+	+' <th>C%_1m</th>'
+	*/
+	
+	//+'<th>Ratio%</th>   '
+	+' </tr></thead><tbody>'
+	var optMostActiveTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="candleClosingsBasedScoreStocksTableStr"><caption style="caption-side:top"> Candle Closings Based Score Stocks| '+selectedTradingDate+' | '+timestamp+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	//var optOILosersTablesStr =  '<div class=""><div class="spaceBetweenTablesSpurtsEquity"><table id="optPriceLosersTablesStr"><caption style="caption-side:top">Options Price Losers | '+selectedTradingDate+' | '+onlySpurtsSelectedTime+'</caption>'+theadStr 
+	 
+	
+	function returnDataStr8( symbol, dataObj )
+	{
+	
+		
+	
+	 
+	 var LastPrice = dataObj['LTP']
+	
+	
+	var day_high = dataObj['day_high']
+	var day_low = dataObj['day_low']
+	
+	var pChange_total_1m = 0
+	
+	
+	
+		var percentageChange = ( ( ( dataObj['LTP'] - dataObj['day_open'] ) / dataObj['day_open'] ) * 100 )
+		var dayRange = Math.abs( ( ( ( day_high-day_low ) / day_low ) * 100).toFixed(3) )
+
+
+		
+		var tablesStr = ''
+		//var tablesStr = '<tr class="item"><td>'
+		//+ symbol
+	
+		
+		if( dataObj['candle_closing_based_score_5m'] && Object.keys(dataObj['candle_closing_based_score_5m']).length > 0 )
+		{
+		
+		/*
+		var market_structure_selected_timeFrame_array = dataObj['market_structure_5m']
+		var highestConsolidation_index = 0
+		var highestConsolidation_candles = 0
+		
+		for( var i=0;i<=market_structure_selected_timeFrame_array.length-2;i++)
+		{
+			if( market_structure_selected_timeFrame_array[i]['inside_candles'] > highestConsolidation_candles )
+			{
+				highestConsolidation_candles = market_structure_selected_timeFrame_array[i]['inside_candles'] 
+				highestConsolidation_index = i
+			}
+		}
+		
+		
+		//var last_swing_obj_5m = dataObj['market_structure_1m'][ dataObj['market_structure_1m'].length-1 ]
+		//var last_swing_obj_5m =   dataObj['market_structure_5m'] && dataObj['market_structure_5m'].length > 0    ? dataObj['market_structure_5m'][dataObj['market_structure_5m'].length - 1]    : {}; // or provide a default object like { time: null, type: null }
+		//var last_swing_obj_5m =   dataObj['market_structure_5m'] && dataObj['market_structure_5m'].length > 1  ? dataObj['market_structure_5m'][dataObj['market_structure_5m'].length - 2]    : {}; // or provide a default object like { time: null, type: null }
+		var last_swing_obj_5m =   market_structure_selected_timeFrame_array && market_structure_selected_timeFrame_array.length > 1  ? market_structure_selected_timeFrame_array[ highestConsolidation_index ]   : {}; // or provide a default object like { time: null, type: null }
+		
+		*/
+		
+		
+		//var last_swing_obj_5m = dataObj['market_structure_1m'][ dataObj['market_structure_1m'].length-1 ]
+		//var last_swing_obj_5m =   dataObj['market_structure_5m'] && dataObj['market_structure_5m'].length > 0    ? dataObj['market_structure_5m'][dataObj['market_structure_5m'].length - 1]    : {}; // or provide a default object like { time: null, type: null }
+		//var last_swing_obj_5m =   dataObj['market_structure_5m'] && dataObj['market_structure_5m'].length > 1  ? dataObj['market_structure_5m'][dataObj['market_structure_5m'].length - 2]    : {}; // or provide a default object like { time: null, type: null }
+		//var last_swing_obj_5m =   market_structure_selected_timeFrame_array && market_structure_selected_timeFrame_array.length > 1  ? market_structure_selected_timeFrame_array[ highestConsolidation_index ]   : {}; // or provide a default object like { time: null, type: null }
+		//var last_swing_obj_5m =  dataObj['inside_candles_range_breakouts_5m'] ['high_low_breakout'] [0]  // or provide a default object like { time: null, type: null }
+		var last_swing_obj_5m =  dataObj['candle_closing_based_score_5m']  // or provide a default object like { time: null, type: null }
+		//var last_swing_obj_5m =  dataObj['high_low_breakout_continuation_structure_5m'] [ dataObj['high_low_breakout_continuation_structure_5m'].length-1 ]  // or provide a default object like { time: null, type: null }
+		//console.log(last_swing_obj_5m )
+		  var bullScore =
+        last_swing_obj_5m['greenBreakHigh'] * 3 +
+        last_swing_obj_5m['closeAbovePrevClose'] * 1 +
+       last_swing_obj_5m['breakDayHigh'] * 4 
+		//cumulativeBullPct * 0.4;
+		
+
+    var bearScore =
+        last_swing_obj_5m['redBreakLow'] * 3 +
+        last_swing_obj_5m['closeBelowPrevClose'] * 1 +
+        last_swing_obj_5m['breakDayLow'] * 4 
+		
+		if( last_swing_obj_5m && last_swing_obj_5m['trend'] )
+		{
+		//var breakoutTime = last_swing_obj_5m['breakout_candle'][0]
+		
+		var breakoutType = last_swing_obj_5m['trend']
+	/*
+		//var market_structure_5m_last_swing_obj = dataObj['market_structure_1m'][ dataObj['market_structure_1m'].length-1 ]
+		var market_structure_5m_last_swing_obj =   dataObj['market_structure_5m'] && dataObj['market_structure_5m'].length > 0    ? dataObj['market_structure_5m'][dataObj['market_structure_5m'].length - 1]    : {}; // or provide a default object like { time: null, type: null }
+		//var market_structure_5m_last_swing_obj =   dataObj['market_structure_5m'] && dataObj['market_structure_5m'].length > 1  ? dataObj['market_structure_5m'][dataObj['market_structure_5m'].length - 2]    : {}; // or provide a default object like { time: null, type: null }
+		
+		var singnal_per_change =  ( last_swing_obj_5m['trend'] =='Bullish' ?  ( ( ( dataObj['day_high'] -  last_swing_obj_5m ['breakout_candle'][4] ) / last_swing_obj_5m ['breakout_candle'][4] ) * 100 ).toFixed(2) :  ( ( ( dataObj['day_low'] -  last_swing_obj_5m ['breakout_candle'][4] ) / last_swing_obj_5m ['breakout_candle'][4] ) * 100 ).toFixed(2) )
+		
+		
+        var [PD_time, PD_open, PD_high, PD_low, PD_close, PD_volume] = last_swing_obj_5m['PD_dataObj']['DailyCandle'][0]
+        
+		var PD_Range = Math.abs( ( ( ( PD_high - PD_low ) / PD_low ) * 100).toFixed(3) )
+		
+		var PD_lastSwing =  last_swing_obj_5m['PD_dataObj']['PD_lastSwing']
+		var PD_lastSwing_Range = Math.abs( ( ( ( PD_lastSwing['swing_high'] - PD_lastSwing['swing_low'] ) / PD_lastSwing['swing_low'] ) * 100).toFixed(3) )
+		
+		*/
+		//console.log( symbol, last_swing_obj_5m )
+		//if( breakoutTime==breakoutTimeSelectorValue || breakoutTimeSelectorValue== 'ALL')
+		//if( (breakoutTime >=breakoutTimeSelectorValue && breakoutTime <=breakoutTimeTillSelectorValue) || breakoutTimeSelectorValue== 'ALL')
+		//if( ( ( breakoutTypeSelectorValue == breakoutType || 'ALL' == breakoutTypeSelectorValue ) &&  (breakoutTime >=breakoutTimeSelectorValue && breakoutTime <=breakoutTimeTillSelectorValue) )
+		//|| (( breakoutTypeSelectorValue == breakoutType || 'ALL' == breakoutTypeSelectorValue ) && breakoutTimeSelectorValue== 'ALL' ) )
+		
+		{
+
+
+		
+		tablesStr += '<tr class="item"><td>'
+		+ symbol
+		+'</td><td>'
+	
+		//+ ( last_swing_obj_5m['avg_range_%'] ?( ( (  Math.abs(last_swing_obj_5m ['breakout_candle'][4] - last_swing_obj_5m ['breakout_candle'][1]) / ( last_swing_obj_5m ['breakout_candle'][1]))*100 ) / last_swing_obj_5m['avg_range_%'] ).toFixed(2)    : ''  )
+		
+		
+		//+'</td><td>'
+		//+ ( last_swing_obj_5m['avg_pChange'] ?  Math.abs(( ( (  Math.abs(last_swing_obj_5m ['breakout_candle'][4] - last_swing_obj_5m ['breakout_candle'][1]) / ( last_swing_obj_5m ['breakout_candle'][1]))*100 ) / last_swing_obj_5m['avg_pChange'] ) * percentageChange ).toFixed(2)    : ''  )
+		
+		//+'</td><td>'
+		
+		//+ last_swing_obj_5m['inside_candles']
+		//+ ( last_swing_obj_5m['start_candle']  ? last_swing_obj_5m['start_candle'][0] : '' )
+		//+'</td><td>'
+		 
+		//+ last_swing_obj_5m['inside_candles']
+		//+ ( last_swing_obj_5m['breakout_candle']  ? last_swing_obj_5m['breakout_candle'][0] : '' )
+		//+'</td><td>'
+		 
+		//+ last_swing_obj_5m['inside_candles']
+		//+ ( last_swing_obj_5m['continuation_candle']  ? last_swing_obj_5m['continuation_candle'][0] : '' )
+		//+'</td><td>'
+		
+		//+ dataObj['score_result_1m']['score']
+		+ percentageChange.toFixed(2)
+		
+		+'</td><td>'
+		+ ( last_swing_obj_5m['trend']  ? last_swing_obj_5m['trend'] : 0 )
+	
+		
+		//+'</td><td>'
+		//+ ( last_swing_obj_5m['start_candle'] ? last_swing_obj_5m['start_candle'][0]  : ''  )
+	
+		//+'</td><td>'
+		//+ ( last_swing_obj_5m['day_close_candle'] ? last_swing_obj_5m ['day_close_candle'][0]  : ''  )
+		
+		
+		+'</td><td>'
+		+ ( last_swing_obj_5m['bullScore'] > last_swing_obj_5m['bearScore'] ? ( last_swing_obj_5m['bullScore'] / Math.max(last_swing_obj_5m['bearScore'], 0.01) ).toFixed(2) :  ( last_swing_obj_5m['bearScore'] / Math.max(last_swing_obj_5m['bullScore'], 0.01) ).toFixed(2) )
+	
+		+'</td><td>'
+		//+ ( last_swing_obj_5m['bullScore']  ? last_swing_obj_5m['bullScore'] .toFixed(2): 0 )
+		+ (bullScore  ) .toFixed(2)
+		
+	
+		+'</td><td>'
+		//+ ( last_swing_obj_5m['bearScore']  ? last_swing_obj_5m['bearScore'].toFixed(2) : 0 )
+		+ (bearScore ) .toFixed(2)
+	
+		+'</td><td>'
+		+ ( last_swing_obj_5m['breakDayHigh']  ? last_swing_obj_5m['breakDayHigh'] : 0 )
+	
+	
+		+'</td><td>'
+		+ ( last_swing_obj_5m['breakDayLow']  ? last_swing_obj_5m['breakDayLow'] : 0 )
+		
+		+'</td><td>'
+		+ ( last_swing_obj_5m['greenBreakHigh']  ? last_swing_obj_5m['greenBreakHigh'] : 0 )
+	
+	
+		+'</td><td>'
+		+ ( last_swing_obj_5m['redBreakLow']  ? last_swing_obj_5m['redBreakLow'] : 0 )
+	
+		+'</td><td>'
+		+ ( last_swing_obj_5m['closeAbovePrevClose']  ? last_swing_obj_5m['closeAbovePrevClose'] : 0 )
+	
+	
+		+'</td><td>'
+		+ ( last_swing_obj_5m['closeBelowPrevClose']  ? last_swing_obj_5m['closeBelowPrevClose'] : 0 )
+	
+	
+		+'</td><td>'
+		+ ( last_swing_obj_5m['cumulativeBullPct']  ? last_swing_obj_5m['cumulativeBullPct'].toFixed(2) : 0 )
+	
+		+'</td><td>'
+		+ ( last_swing_obj_5m['cumulativeBearPct']  ? last_swing_obj_5m['cumulativeBearPct'].toFixed(2) : 0 )
+	
+		+'</td><td>'
+		+ ( last_swing_obj_5m['cumulativeBullPct'] > last_swing_obj_5m['cumulativeBearPct'] ? ( last_swing_obj_5m['cumulativeBullPct'] / Math.max(last_swing_obj_5m['cumulativeBearPct'], 0.01) ).toFixed(2) :  ( last_swing_obj_5m['cumulativeBearPct'] / Math.max(last_swing_obj_5m['cumulativeBullPct'], 0.01) ).toFixed(2) )
+	
+	
+		//+'</td><td>'
+		//+ ( last_swing_obj_5m['avg_range_%'] ?(  last_swing_obj_5m['avg_range_%'] ).toFixed(2)    : ''  )
+	
+		//+'</td><td>'
+		//+ ( last_swing_obj_5m['avg_pChange'] ?(  last_swing_obj_5m['avg_pChange'] ).toFixed(2)    : ''  )
+	
+		
+		//+'</td><td>'
+		//+ dataObj['score_result_1m']['score']
+		//+ ( last_swing_obj_5m['trend'] =='Bullish' ?  ( ( ( dataObj['day_high'] -  last_swing_obj_5m ['breakout_candle'][4] ) / last_swing_obj_5m ['breakout_candle'][4] ) * 100 ).toFixed(2) :  ( ( ( dataObj['day_low'] -  last_swing_obj_5m ['breakout_candle'][4] ) / last_swing_obj_5m ['breakout_candle'][4] ) * 100 ).toFixed(2) )
+		
+		 
+		//+'</td><td>'
+		//+ dataObj['score_result_1m']['score']
+		//+ ( last_swing_obj_5m['trend'] =='Bullish' ?  (( ( ( dataObj['day_high'] -  last_swing_obj_5m ['breakout_candle'][4] ) / last_swing_obj_5m ['breakout_candle'][4] ) * 100 ) * dataObj['high_low_breakout_continuation_structure_5m'].length).toFixed(2) :  (( ( ( dataObj['day_low'] -  last_swing_obj_5m ['breakout_candle'][4] ) / last_swing_obj_5m ['breakout_candle'][4] ) * 100 ) * dataObj['high_low_breakout_continuation_structure_5m'].length).toFixed(2) )
+		
+		 
+		//+'</td><td>'
+		//+ ( market_structure_5m_last_swing_obj['swing_high']  ? ( (market_structure_5m_last_swing_obj['swing_high'] - market_structure_5m_last_swing_obj['swing_low'])/market_structure_5m_last_swing_obj['swing_low']*100 ).toFixed(2) : 'Null' )
+		
+		 
+		//+'</td><td>'
+		//+ ( last_swing_obj_5m['inside_candles']  ? last_swing_obj_5m['inside_candles'] : '0' )
+		
+		//+'</td><td>'
+		//+ ( market_structure_5m_last_swing_obj['swing_high']  ? ( (100-( (market_structure_5m_last_swing_obj['swing_high'] - market_structure_5m_last_swing_obj['swing_low'])/market_structure_5m_last_swing_obj['swing_low']*100 )) * market_structure_5m_last_swing_obj['inside_candles'] ) .toFixed(2) : 'Null' )
+		//+ ( market_structure_5m_last_swing_obj['swing_high']  ? ( (100-( (market_structure_5m_last_swing_obj['swing_high'] - market_structure_5m_last_swing_obj['swing_low'])/market_structure_5m_last_swing_obj['swing_low']*100 )) * market_structure_5m_last_swing_obj['inside_candles'] * Number( singnal_per_change ) ) .toFixed(2) : 'Null' )
+		// +( market_structure_5m_last_swing_obj['swing_high']  ? ( (100-( (market_structure_5m_last_swing_obj['swing_high'] - market_structure_5m_last_swing_obj['swing_low'])/market_structure_5m_last_swing_obj['swing_low']*100 )) * (dataObj['high_low_breakout_continuation_structure_5m'].length) ) .toFixed(2) : 'Null' )
+		 
+		//+'</td><td>'
+		 //+( market_structure_5m_last_swing_obj['swing_high']  ? ( (100-( (market_structure_5m_last_swing_obj['swing_high'] - market_structure_5m_last_swing_obj['swing_low'])/market_structure_5m_last_swing_obj['swing_low']*100 )) * market_structure_5m_last_swing_obj['inside_candles'] *  (dataObj['high_low_breakout_continuation_structure_5m'].length) ) .toFixed(2) : 'Null' )
+		
+		//+'</td><td>'
+		 //+( market_structure_5m_last_swing_obj['swing_high']  ? ( (100-( (market_structure_5m_last_swing_obj['swing_high'] - market_structure_5m_last_swing_obj['swing_low'])/market_structure_5m_last_swing_obj['swing_low']*100 )) * market_structure_5m_last_swing_obj['inside_candles'] *  (dataObj['high_low_breakout_continuation_structure_5m'].length) *  (100 - PD_Range)  ) .toFixed(2) : 'Null' )
+		
+		//BELOW IS BEST
+		// +( market_structure_5m_last_swing_obj['swing_high']  ? ( (100-( (market_structure_5m_last_swing_obj['swing_high'] - market_structure_5m_last_swing_obj['swing_low'])/market_structure_5m_last_swing_obj['swing_low']*100 )) * (dataObj['high_low_breakout_continuation_structure_5m'].length) *  (100 - PD_Range) ) .toFixed(2) : 'Null' )
+		 
+		 
+		 //+( market_structure_5m_last_swing_obj['swing_high']  ? ( (100-( (market_structure_5m_last_swing_obj['swing_high'] - market_structure_5m_last_swing_obj['swing_low'])/market_structure_5m_last_swing_obj['swing_low']*100 )) * (dataObj['high_low_breakout_continuation_structure_5m'].length) *  (100 - PD_Range) *  (PD_lastSwing['inside_candles']) ) .toFixed(2) : 'Null' )
+		 //+( market_structure_5m_last_swing_obj['swing_high']  ? (  (dataObj['high_low_breakout_continuation_structure_5m'].length) *  (100 - dayRange) *  (100 - PD_lastSwing_Range) * PD_lastSwing['inside_candles'] * Math.abs(( ( (  Math.abs(last_swing_obj_5m ['breakout_candle'][4] - last_swing_obj_5m ['breakout_candle'][1]) / ( last_swing_obj_5m ['breakout_candle'][1]))*100 ) / last_swing_obj_5m['avg_pChange'] ) * percentageChange ) ) .toFixed(2) : 'Null' )
+		 
+		
+		//+'</td><td>'
+		//+ (dataObj['high_low_breakout_continuation_structure_5m'].length)
+		 /*
+		+'</td><td>'
+		+ dayRange
+		 
+		+'</td><td>'
+		+ PD_lastSwing['inside_candles']
+		 
+		+'</td><td>'
+		+ PD_lastSwing_Range
+		
+		+'</td><td>'
+		+ PD_Range
+		 
+		+'</td><td>'
+		+ symbol
+		 */
+		 
+		//+'</td><td>'
+		+'</td></tr>'
+		}
+		
+		}
+		}
+
+		if( false && dataObj['score_result_1m'] != undefined )
+		{
+		tablesStr += 
+		'</td><td>'
+		//+ dataObj['score_result_1m']['score']
+		+ percentageChange.toFixed(2)
+		 
+		+'</td><td>'
+		//+ dataObj['score_result_1m']['score']
+		//+ ( dataObj['score_result_1m']['num_consec'] * dataObj['score_result_1m']['body_per'] ).toFixed(2)
+		//+ Math.abs( percentageChange * dataObj['score_result_1m']['num_consec'] * dataObj['score_result_1m']['body_per']  ).toFixed(2)
+		+ Math.abs( percentageChange * dataObj['score_result_1m']['num_consec'] ).toFixed(2)
+		
+		+'</td><td>'
+		+ dataObj['score_result_1m']['num_consec']
+		
+		//+'</td><td>'
+		//+ dataObj['score_result_1m']['body_wick']
+		
+		+'</td><td>'
+		+ dataObj['score_result_1m']['body_per']
+		
+		+'</td><td>'
+		//+ dataObj['score_result_1m']['analyzed_candles']['max_consecutive_bullish']
+		+ dataObj['score_result_1m']['analyzed_candles']['max_valid_consecutive_bullish']
+		+'</td><td>'
+		+ dataObj['score_result_1m']['analyzed_candles']['max_valid_consecutive_bearish']
+		
+		+'</td><td>'
+		//+ dataObj['score_result_1m']['retracement']
+		+Math.abs( percentageChange * dataObj['score_result_1m']['analyzed_candles']['max_valid_consecutive_bullish'] ).toFixed(2)
+		
+		+'</td><td>'
+		//+ dataObj['score_result_1m']['pullback_depth']
+		+Math.abs( percentageChange * dataObj['score_result_1m']['analyzed_candles']['max_valid_consecutive_bearish'] ).toFixed(2)
+		
+		
+		
+		+'</td><td>'
+		//+ dataObj['score_result_5m']['score']
+		//+ ( dataObj['score_result_5m']['num_consec'] * dataObj['score_result_5m']['body_per'] ).toFixed(2)
+		//+Math.abs( percentageChange  * dataObj['score_result_5m']['num_consec'] * dataObj['score_result_5m']['body_per']   ).toFixed(2)
+		+Math.abs( percentageChange  * dataObj['score_result_5m']['num_consec'] ).toFixed(2)
+		
+		
+		+'</td><td>'
+		+ dataObj['score_result_5m']['num_consec']
+		
+		//+'</td><td>'
+		//+ dataObj['score_result_5m']['body_wick']
+		
+		+'</td><td>'
+		+ dataObj['score_result_5m']['body_per']
+		
+		+'</td><td>'
+		+ dataObj['score_result_5m']['analyzed_candles']['max_valid_consecutive_bullish']
+		+'</td><td>'
+		+ dataObj['score_result_5m']['analyzed_candles']['max_valid_consecutive_bearish']
+		
+		
+		+'</td><td>'
+		//+ dataObj['score_result_5m']['retracement']
+		+Math.abs( percentageChange * dataObj['score_result_5m']['analyzed_candles']['max_valid_consecutive_bullish'] ).toFixed(2)
+		
+		+'</td><td>'
+		//+ dataObj['score_result_5m']['pullback_depth']
+		+Math.abs( percentageChange  * dataObj['score_result_5m']['analyzed_candles']['max_valid_consecutive_bearish'] ).toFixed(2)
+		
+		
+		+'</td><td>'
+		}
+
+			
+		/*
+		tablesStr += 
+		//+'</td><td>'
+		+ratioPercentage.toFixed(2)
+		+'</td><td>'
+		+ whoIsMoreAggressive 
+		+'</td><td>'
+		+ LTP_near_HighestVolBar_priceRange.toFixed(3)
+		+'</td><td>'
+		+ LTP_near_POC.toFixed(3)
+		+'</td><td>'
+		+ HighestVolBar_priceRange
+		+'</td><td>'
+		+ POC_Price
+		+'</td><td>'
+		+ LastPrice
+		+'</td><td>'
+		+ HighestVolBar_time
+		+'</td><td>'
+		+ HighestVolBar_near_day_high.toFixed(3)
+		+'</td><td>'
+		+ HighestVolBar_near_day_low.toFixed(3)
+		+'</td><td>'
+		+ ( dataObj['total_ask'] - HighestVolBar_priceRange_total_ask )
+		+'</td><td>'
+		+ ( dataObj['total_bid'] - HighestVolBar_priceRange_total_bid )
+		
+		+'</td><td>'
+		+ ( pChange_total_1m )
+		*/
+		
+				
+		/*
+		+'</td><td>'
+		+ dataObj['marketDeptOrderBook']['totalBuyQuantity'] 
+		+'</td><td>'
+		+ dataObj['marketDeptOrderBook']['totalSellQuantity']
+		+'</td><td>'
+		//+ dataObj['marketDeptOrderBook']['totalBuyQuantity'] + ' (' +(dataObj['marketDeptOrderBook']['totalBuyQuantity'] / (dataObj['marketDeptOrderBook']['totalBuyQuantity'] + dataObj['marketDeptOrderBook']['totalSellQuantity'] ) *100 ).toFixed(2) + ')' 
+		+ (dataObj['marketDeptOrderBook']['totalBuyQuantity'] / (dataObj['marketDeptOrderBook']['totalBuyQuantity'] + dataObj['marketDeptOrderBook']['totalSellQuantity'] ) *100 ).toFixed(2) 
+		+'</td><td>'
+		//+ dataObj['marketDeptOrderBook']['totalSellQuantity'] + ' (' +(dataObj['marketDeptOrderBook']['totalSellQuantity'] / (dataObj['marketDeptOrderBook']['totalBuyQuantity'] + dataObj['marketDeptOrderBook']['totalSellQuantity'] ) *100 ).toFixed(2) + ')' 
+		+ (dataObj['marketDeptOrderBook']['totalSellQuantity'] / (dataObj['marketDeptOrderBook']['totalBuyQuantity'] + dataObj['marketDeptOrderBook']['totalSellQuantity'] ) *100 ).toFixed(2)
+		//+'</td><td>'
+		*/
+		//+ ratioPercentage.toFixed(2)
+		//+'</td></tr>'
+		//console.log( "tablesStr", tablesStr )
+		return tablesStr;
+	}
+
+	for( var i=0; i< Object.keys( candleWiseDataObj ).length ; i++ ) {
+	//for( var i=0; i< 50 ; i++ ) {
+	//var symbol = symbolStr.split('_')[0]
+	var symbol = Object.keys( candleWiseDataObj )[i]
+
+	{
+
+		var dataObj = candleWiseDataObj [symbol]
+	
+		optMostActiveTablesStr +=	returnDataStr8( symbol, dataObj )
+
+	}
+	}
+	
+	optMostActiveTablesStr +=' </tbody> </table>    </div>  </div>'
+	//optOILosersTablesStr +=' </tbody> </table>    </div>  </div>'
+
+
+	
+	 document.getElementById('candleClosingsBasedScoreStocksTableContainer').innerHTML = optMostActiveTablesStr;
 	
 	 await addEventListnerInTables()
 }	//	show_spurts_in_oi_underlyings_Data() Function ENDS HERE
