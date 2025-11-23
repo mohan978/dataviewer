@@ -4690,11 +4690,18 @@ async function showLiveScannerAllStocksDataInTable()
 	+' <th>breakDayHigh</th>'
 	+' <th>breakDayLow</th>'
 	
-	+' <th>greenBreakHigh</th>'
-	+' <th>redBreakLow</th>'
+	+'<th>Symbol</th>'
+	
+	//+' <th>greenBreakHigh</th>'
+	+' <th>closeAbvPreHigh</th>'
+	//+' <th>redBreakLow</th>'
+	+' <th>closeBlwPreLow</th>'
 	
 	+' <th>closeAbovePrevClose</th>'
 	+' <th>closeBelowPrevClose</th>'
+	
+	+' <th>highAbvPrevHigh</th>'
+	+' <th>lowBlwPreLow</th>'
 	
 	
 	
@@ -4703,6 +4710,7 @@ async function showLiveScannerAllStocksDataInTable()
 	
 	+' <th>pChng_Ratio</th>'
 	
+	+'<th>Symbol</th>'
 	//+' <th>Avg_Rng</th>'
 	//+' <th>Avg_pChng</th>'
 	//+' <th>Score</th>'
@@ -4920,6 +4928,9 @@ async function showLiveScannerAllStocksDataInTable()
 		+ ( last_swing_obj_5m['breakDayLow']  ? last_swing_obj_5m['breakDayLow'] : 0 )
 		
 		+'</td><td>'
+		+ symbol
+		
+		+'</td><td>'
 		+ ( last_swing_obj_5m['greenBreakHigh']  ? last_swing_obj_5m['greenBreakHigh'] : 0 )
 	
 	
@@ -4933,6 +4944,12 @@ async function showLiveScannerAllStocksDataInTable()
 		+'</td><td>'
 		+ ( last_swing_obj_5m['closeBelowPrevClose']  ? last_swing_obj_5m['closeBelowPrevClose'] : 0 )
 	
+		+'</td><td>'
+		+ ( last_swing_obj_5m['highAbovePrevHigh']  ? last_swing_obj_5m['highAbovePrevHigh'] : 0 )
+	
+		+'</td><td>'
+		+ ( last_swing_obj_5m['lowBelowPrevLow']  ? last_swing_obj_5m['lowBelowPrevLow'] : 0 )
+	
 	
 		+'</td><td>'
 		+ ( last_swing_obj_5m['cumulativeBullPct']  ? last_swing_obj_5m['cumulativeBullPct'].toFixed(2) : 0 )
@@ -4943,6 +4960,9 @@ async function showLiveScannerAllStocksDataInTable()
 		+'</td><td>'
 		+ ( last_swing_obj_5m['cumulativeBullPct'] > last_swing_obj_5m['cumulativeBearPct'] ? ( last_swing_obj_5m['cumulativeBullPct'] / Math.max(last_swing_obj_5m['cumulativeBearPct'], 0.01) ).toFixed(2) :  ( last_swing_obj_5m['cumulativeBearPct'] / Math.max(last_swing_obj_5m['cumulativeBullPct'], 0.01) ).toFixed(2) )
 	
+		+'</td><td>'
+		+ symbol
+		
 	
 		//+'</td><td>'
 		//+ ( last_swing_obj_5m['avg_range_%'] ?(  last_swing_obj_5m['avg_range_%'] ).toFixed(2)    : ''  )
