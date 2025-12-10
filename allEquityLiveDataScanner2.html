@@ -4679,9 +4679,11 @@ async function showLiveScannerAllStocksDataInTable()
 	//+' <th>ContinueT</th>'
 	
 	+' <th>c%</th>'
+	+' <th>Rank</th>'
 	
 	+' <th>Trend_5m</th>'
 	+' <th>Trend_Ratio</th>'
+	+' <th>Trend_Ratio2</th>'
 	
 	
 	+' <th>bullScore</th>'
@@ -4828,16 +4830,25 @@ async function showLiveScannerAllStocksDataInTable()
 		//var last_swing_obj_5m =  dataObj['high_low_breakout_continuation_structure_5m'] [ dataObj['high_low_breakout_continuation_structure_5m'].length-1 ]  // or provide a default object like { time: null, type: null }
 		//console.log(last_swing_obj_5m )
 		  var bullScore =
-        last_swing_obj_5m['greenBreakHigh'] * 3 +
-        last_swing_obj_5m['closeAbovePrevClose'] * 1 +
-       last_swing_obj_5m['breakDayHigh'] * 4 
+        //last_swing_obj_5m['greenBreakHigh'] * 3 +
+        last_swing_obj_5m['greenBreakHigh'] * 2 +
+        //last_swing_obj_5m['closeAbovePrevClose'] * 1 +
+        last_swing_obj_5m['closeAbovePrevClose'] * 3 +
+       //last_swing_obj_5m['breakDayHigh'] * 4 
+       last_swing_obj_5m['breakDayHigh'] * 1 
 		//cumulativeBullPct * 0.4;
+		// + last_swing_obj_5m['cumulativeBullPct'] 
 		
 
     var bearScore =
-        last_swing_obj_5m['redBreakLow'] * 3 +
-        last_swing_obj_5m['closeBelowPrevClose'] * 1 +
-        last_swing_obj_5m['breakDayLow'] * 4 
+        //last_swing_obj_5m['redBreakLow'] * 3 +
+        //last_swing_obj_5m['closeBelowPrevClose'] * 1 +
+        //last_swing_obj_5m['breakDayLow'] * 4   
+		
+		last_swing_obj_5m['redBreakLow'] * 2 +
+        last_swing_obj_5m['closeBelowPrevClose'] * 3 +
+        last_swing_obj_5m['breakDayLow'] * 1 
+		// + last_swing_obj_5m['cumulativeBearPct']  
 		
 		if( last_swing_obj_5m && last_swing_obj_5m['trend'] )
 		{
@@ -4898,6 +4909,9 @@ async function showLiveScannerAllStocksDataInTable()
 		+ percentageChange.toFixed(2)
 		
 		+'</td><td>'
+		+ (  percentageChange * dataObj['high_low_breakout_continuation_structure_5m'].length ).toFixed(2)
+	
+		+'</td><td>'
 		+ ( last_swing_obj_5m['trend']  ? last_swing_obj_5m['trend'] : 0 )
 	
 		
@@ -4909,7 +4923,11 @@ async function showLiveScannerAllStocksDataInTable()
 		
 		
 		+'</td><td>'
-		+ ( last_swing_obj_5m['bullScore'] > last_swing_obj_5m['bearScore'] ? ( last_swing_obj_5m['bullScore'] / Math.max(last_swing_obj_5m['bearScore'], 0.01) ).toFixed(2) :  ( last_swing_obj_5m['bearScore'] / Math.max(last_swing_obj_5m['bullScore'], 0.01) ).toFixed(2) )
+		//+ ( last_swing_obj_5m['bullScore'] > last_swing_obj_5m['bearScore'] ? ( last_swing_obj_5m['bullScore'] / Math.max(last_swing_obj_5m['bearScore'], 0.01) ).toFixed(2) :  ( last_swing_obj_5m['bearScore'] / Math.max(last_swing_obj_5m['bullScore'], 0.01) ).toFixed(2) )
+		+ ( last_swing_obj_5m['bullScore'] > last_swing_obj_5m['bearScore'] ? ( bullScore / Math.max( bearScore, 0.01) ).toFixed(2) :  ( bearScore / Math.max( bullScore, 0.01) ).toFixed(2) )
+		
+		+'</td><td>'
+		+ ( last_swing_obj_5m['bullScore'] > last_swing_obj_5m['bearScore'] ?  ( bullScore>0 && bearScore>0  ?  ( bullScore / Math.max( bearScore, 0.01) ).toFixed(2)  : '0'  )  :   ( bullScore>0 && bearScore>0  ?   ( bearScore / Math.max( bullScore, 0.01) ).toFixed(2) : '0'  )  )
 	
 		+'</td><td>'
 		//+ ( last_swing_obj_5m['bullScore']  ? last_swing_obj_5m['bullScore'] .toFixed(2): 0 )
