@@ -4239,12 +4239,13 @@ async function showLiveScannerAllStocksDataInTable()
 	 document.getElementById('previousDayStructureHighLowBreakoutStocksTableContainer').innerHTML = optMostActiveTablesStr;
 	
 	
+		
 	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => b[1] - a[1] ) )   // for sorting object ascending
 	//Object.fromEntries( Object.entries(FnOList).sort( (a,b) => a[1] - b[1] ) )   // for sorting object descending
 	var theadStr = '<thead class="tableRowClass">   <tr>      '
 	+'<th>Symbol</th>'
-	+' <th>%Chng/Range</th>'
-	+' <th>Chng%Ratio</th>'
+
+	+' <th>StartT</th>'
 	+' <th>BreakoutT</th>'
 	//+' <th>ContinueT</th>'
 	
@@ -4253,68 +4254,15 @@ async function showLiveScannerAllStocksDataInTable()
 	
 	+' <th>BreakoutStngh</th>'
 	
-	+' <th>Avg_Rng</th>'
-	+' <th>Avg_pChng</th>'
+	+' <th>C%</th>'
+	//+' <th>Sgnl%</th>'
+	+' <th>Insd Cndls</th>'
+	+' <th>HighLowBreaks</th>'
+	+' <th>OpenCloseBreaks</th>'
+	+' <th>HighLowScore</th>'
+	+' <th>OpenCloseScore</th>'
 	//+' <th>Score</th>'
 	
-	+' <th>c%</th>'
-	+' <th>Sgnl%</th>'
-	+' <th>Score</th>'
-	+' <th>SwingRng</th>'
-	+' <th>Candles</th>'
-	+' <th>Rng*Cndl</th>'
-	+' <th>Rng*Cndl*No.Brk</th>'
-	+' <th>Score_PD</th>'
-	+' <th>No.Breaks</th>'
-	+' <th>CurrRng</th>'
-	+' <th>PD_Swing</th>'
-	+' <th>PD_Swing_Rng</th>'
-	+' <th>PD_Rng</th>'
-	+'<th>Symbol</th>'
-	
-	
-	/*
-	+' <th>Score_1m</th>'
-	+' <th>Candles</th>'
-	//+' <th>bodyWick_1m</th>'
-	+' <th>bodyPer</th>'
-	+' <th>bullish</th>'
-	+' <th>bearish</th>'
-	//+' <th>retracement</th>'
-	//+' <th>pullback</th>'
-	
-	+' <th>bullish%</th>'
-	+' <th>bearish%</th>'
-
-	+' <th>Score_5m</th>'
-	+' <th>Candles</th>'
-	//+' <th>bodyWick_5m</th>'
-	+' <th>bodyPer</th>'
-	+' <th>bullish</th>'
-	+' <th>bearish</th>'
-	//+' <th>retracement</th>'
-	//+' <th>pullback</th>'
-	
-	+' <th>bullish%</th>'
-	+' <th>bearish%</th>'
-
-	
-	+'<th>Ratio</th>'
-	+' <th>Agrsv</th>'
-	+' <th>Near HVP</th>'
-	+' <th>Near POC</th>'
-	+' <th>HVP</th>'
-	+' <th>POC</th>'
-	+' <th>LTP</th>'
-	+' <th>TimeHVP</th>'
-	+' <th>HVP Near High</th>'
-	+' <th>HVP Near Low</th>'
-	
-	
-	+' <th>BuyChng</th>'
-	+' <th>SellChng</th>'
-	+' <th>C%_1m</th>'
-	*/
 	
 	//+'<th>Ratio%</th>   '
 	+' </tr></thead><tbody>'
@@ -4373,13 +4321,12 @@ async function showLiveScannerAllStocksDataInTable()
 		
 		*/
 		
-		
 		//var last_swing_obj_5m = dataObj['market_structure_1m'][ dataObj['market_structure_1m'].length-1 ]
 		//var last_swing_obj_5m =   dataObj['market_structure_5m'] && dataObj['market_structure_5m'].length > 0    ? dataObj['market_structure_5m'][dataObj['market_structure_5m'].length - 1]    : {}; // or provide a default object like { time: null, type: null }
 		//var last_swing_obj_5m =   dataObj['market_structure_5m'] && dataObj['market_structure_5m'].length > 1  ? dataObj['market_structure_5m'][dataObj['market_structure_5m'].length - 2]    : {}; // or provide a default object like { time: null, type: null }
 		//var last_swing_obj_5m =   market_structure_selected_timeFrame_array && market_structure_selected_timeFrame_array.length > 1  ? market_structure_selected_timeFrame_array[ highestConsolidation_index ]   : {}; // or provide a default object like { time: null, type: null }
-		//var last_swing_obj_5m =  dataObj['inside_candles_range_breakouts_5m'] ['high_low_breakout'] [0]  // or provide a default object like { time: null, type: null }
-		var last_swing_obj_5m =  dataObj['inside_candles_range_breakouts_5m'] ['open_close_breakout'] [0]  // or provide a default object like { time: null, type: null }
+		var last_swing_obj_5m =  dataObj['inside_candles_range_breakouts_5m'] ['high_low_breakout'] [0]  // or provide a default object like { time: null, type: null }
+		//var last_swing_obj_5m =  dataObj['inside_candles_range_breakouts_5m'] ['open_close_breakout'] [0]  // or provide a default object like { time: null, type: null }
 		//var last_swing_obj_5m =  dataObj['high_low_breakout_continuation_structure_5m'] [ dataObj['high_low_breakout_continuation_structure_5m'].length-1 ]  // or provide a default object like { time: null, type: null }
 		//console.log(last_swing_obj_5m )
 		if( last_swing_obj_5m && last_swing_obj_5m['breakout_candle'] )
@@ -4477,6 +4424,20 @@ async function showLiveScannerAllStocksDataInTable()
 		 
 		+'</td><td>'
 		+ ( last_swing_obj_5m['inside_candles']  ? last_swing_obj_5m['inside_candles'] : '0' )
+		
+
+		+'</td><td>'
+		+ ( dataObj['inside_candles_range_breakouts_5m']  ? dataObj['inside_candles_range_breakouts_5m'] ['high_low_breakout'].length : '0' )
+		
+		+'</td><td>'
+		+ ( dataObj['inside_candles_range_breakouts_5m']  ? dataObj['inside_candles_range_breakouts_5m'] ['open_close_breakout'].length : '0' )
+		
+
+		+'</td><td>'
+		+ ( dataObj['inside_candles_range_breakouts_5m']  ?  (percentageChange * dataObj['inside_candles_range_breakouts_5m'] ['high_low_breakout'].length).toFixed(2) : '0' )
+		
+		+'</td><td>'
+		+ ( dataObj['inside_candles_range_breakouts_5m']  ?  (percentageChange * dataObj['inside_candles_range_breakouts_5m'] ['open_close_breakout'].length ).toFixed(2)  : '0' )
 		
 		//+'</td><td>'
 		//+ ( market_structure_5m_last_swing_obj['swing_high']  ? ( (100-( (market_structure_5m_last_swing_obj['swing_high'] - market_structure_5m_last_swing_obj['swing_low'])/market_structure_5m_last_swing_obj['swing_low']*100 )) * market_structure_5m_last_swing_obj['inside_candles'] ) .toFixed(2) : 'Null' )
