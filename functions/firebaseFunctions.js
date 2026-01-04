@@ -79,7 +79,15 @@ function getFirestoreData( passedValue, passedObj )
 	 else
 	 {
 	var monthYearCollection = document.getElementById('monthYear').value
-	var year = document.getElementById('year').value
+	//var year = document.getElementById('year').value
+	
+	var year = monthYearCollection.split(' ')[1]
+	
+	var yearElement = document.getElementById('year')
+	var optionElement = document.createElement("option");
+	optionElement.text = year;
+	yearElement.add(optionElement);
+	 document.getElementById('year').value = year
 
     //var usersRef = db.doc('/April 2023/26-Apr-2023/');
     //var doc_path = '/' +year+'/' + monthYearCollection+'/'
