@@ -99,8 +99,9 @@ th, td {
 
  <label>Year:</label>
 <select id="year" onchange="getFirestoreData()">
+
+<option>2025</option>
 <option>2026</option>
-	<option>2025</option>
 </select>
 
  <label>Month Year:</label>
@@ -4248,6 +4249,7 @@ async function showLiveScannerAllStocksDataInTable()
 
 	+' <th>StartT</th>'
 	+' <th>BreakoutT</th>'
+	+' <th>Range%</th>'
 	//+' <th>ContinueT</th>'
 	
 	+' <th>Trend_5m</th>'
@@ -4289,7 +4291,7 @@ async function showLiveScannerAllStocksDataInTable()
 	
 		var percentageChange = ( ( ( dataObj['LTP'] - dataObj['day_open'] ) / dataObj['day_open'] ) * 100 )
 		var dayRange = Math.abs( ( ( ( day_high-day_low ) / day_low ) * 100).toFixed(3) )
-
+		
 
 		
 		var tablesStr = ''
@@ -4330,8 +4332,15 @@ async function showLiveScannerAllStocksDataInTable()
 		//var last_swing_obj_5m =  dataObj['inside_candles_range_breakouts_5m'] ['open_close_breakout'] [0]  // or provide a default object like { time: null, type: null }
 		//var last_swing_obj_5m =  dataObj['high_low_breakout_continuation_structure_5m'] [ dataObj['high_low_breakout_continuation_structure_5m'].length-1 ]  // or provide a default object like { time: null, type: null }
 		//console.log(last_swing_obj_5m )
+		
 		if( last_swing_obj_5m && last_swing_obj_5m['breakout_candle'] )
 		{
+		
+		var swing_high = last_swing_obj_5m['swing_high']
+		var swing_low = last_swing_obj_5m['swing_low']
+		
+		var rangePercentageHighLow = Math.abs( ( ( ( swing_high-swing_low ) / swing_low ) * 100).toFixed(3) )
+
 		var breakoutTime = last_swing_obj_5m['breakout_candle'][0]
 		
 		var breakoutType = last_swing_obj_5m['trend']
@@ -4379,6 +4388,10 @@ async function showLiveScannerAllStocksDataInTable()
 		 
 		//+ last_swing_obj_5m['inside_candles']
 		+ ( last_swing_obj_5m['breakout_candle']  ? last_swing_obj_5m['breakout_candle'][0] : '' )
+		+'</td><td>'
+		
+		
+		 + rangePercentageHighLow
 		+'</td><td>'
 		 
 		//+ last_swing_obj_5m['inside_candles']
@@ -7581,5 +7594,4 @@ function tableSortAndPushData(tableHead,event)
 
 <script>
 generateMonthYearFromDate( new Date("January 2025") );
-
 </script>
