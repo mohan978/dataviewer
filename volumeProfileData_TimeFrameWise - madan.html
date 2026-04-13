@@ -1,4 +1,4 @@
-﻿
+
 <!-- Importing Firebase SDK Starts Here-->
   <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-firestore.js"></script>
@@ -99,8 +99,9 @@ th, td {
 
  <label>Year:</label>
 <select id="year" onchange="getFirestoreData()">
-<option>2025</option>
 <option>2026</option>
+<option>2025</option>
+<option>2024</option>
 </select>
 
  <label>Month Year:</label>
@@ -2075,12 +2076,19 @@ const fileName = `${selectedEquitySymbol}_${selectedTradingDate}_${selectedMonth
 
 const fileName2 = `${selectedEquitySymbol}_${selectedTradingDate}`;  // sanitize colons/spaces for file systems
 
+const getCurrentTime = () => {
+  const now = new Date();
+  const hours = now.getHours().toString().padStart(2, '0');
+  const minutes = now.getMinutes().toString().padStart(2, '0');
+  const seconds = now.getSeconds().toString().padStart(2, '0');
+  return `${hours}:${minutes}:${seconds}`;
+};
 
-
-
+console.log(getCurrentTime());
 
 document.getElementById("downloadBtn").addEventListener("click", () => {
-      const fileName = "candleData.json"; // file name
+      //const fileName3 = fileName2; // "candleData.json"; // file name
+      const fileName3 = `${fileName2}_${getCurrentTime()}`;
       const blob = new Blob(
         [JSON.stringify(candleWiseDataObj, null, 2)], 
         { type: 'application/json' }
@@ -2088,7 +2096,7 @@ document.getElementById("downloadBtn").addEventListener("click", () => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = fileName;
+      a.download = fileName3;
       a.click();
       URL.revokeObjectURL(url);
     });
