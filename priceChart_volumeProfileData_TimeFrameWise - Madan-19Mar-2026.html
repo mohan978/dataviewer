@@ -472,7 +472,7 @@ display: none;
 <hr>
 
  <label> Derivatives Symbols:</label>
-<input type="text" id="searchBox" placeholder="Search..." autocomplete="off">
+ <input type="text" id="searchBox" placeholder="Search..." autocomplete="off">
 
 <select id="derivativesSymbols" onchange="showPerticularStocksEquityDataInTable();startExtraction();">
 </select>
@@ -512,7 +512,10 @@ display: none;
 <br>
 
 <!--Seach Symbols Start --> 
+
+
 <script>
+
 const select = document.getElementById("derivativesSymbols");
 const input = document.getElementById("searchBox");
 const box = document.getElementById("autocomplete");
@@ -564,12 +567,12 @@ function render() {
 function selectItem(opt) {
     select.value = opt.value;
 
-    // triggers:
-    // showPerticularStocksEquityDataInTable()
-    // startExtraction()
+    // trigger your existing functions
     select.dispatchEvent(new Event("change"));
 
-    input.value = opt.text;
+    // set selected text (optional)
+    input.value = "";
+
     hide();
 }
 
@@ -640,8 +643,15 @@ document.addEventListener("click", (e) => {
 
 // optional: run cleanup once after load
 window.addEventListener("load", cleanSelect);
+
+ 
 </script>
+
+
 <!--Seach Symbols End--> 
+
+
+
 
 <script>
 let showBubbles = true;
