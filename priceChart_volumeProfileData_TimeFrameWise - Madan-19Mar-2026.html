@@ -512,34 +512,31 @@ display: none;
 <br>
 
 <!--Seach Symbols Start --> 
-
 <script>
 const select = document.getElementById("derivativesSymbols");
 const input = document.getElementById("searchBox");
 const box = document.getElementById("autocomplete");
 
-let options = [];
 let filtered = [];
 let activeIndex = -1;
 
-// Wait until select is populated dynamically
-function waitForSelect(callback) {
-    const obs = new MutationObserver(() => {
-        if (select.options.length > 0) {
-            obs.disconnect();
-            callback();
-        }
-    });
-
-    obs.observe(select, { childList: true });
+// 🔥 ALWAYS read fresh clean options
+function getOptions() {
+    return Array.from(select.options).filter(o =>
+        o.value && o.text && o.text.trim() !== ""
+    );
 }
 
-// Initialize
-waitForSelect(() => {
-    options = Array.from(select.options);
-});
+// optional cleanup (removes junk like "G" or empty)
+function cleanSelect() {
+    Array.from(select.options).forEach(opt => {
+        if (!opt.text || opt.text.trim() === "") {
+            opt.remove();
+        }
+    });
+}
 
-// Render dropdown
+// render dropdown
 function render() {
     box.innerHTML = "";
 
@@ -548,18 +545,14 @@ function render() {
         return;
     }
 
-    filtered.forEach((opt, index) => {
+    filtered.forEach((opt, i) => {
         const div = document.createElement("div");
         div.className = "autocomplete-item";
         div.textContent = opt.text;
 
-        if (index === activeIndex) {
-            div.classList.add("active");
-        }
+        if (i === activeIndex) div.classList.add("active");
 
-        div.addEventListener("click", () => {
-            selectValue(opt);
-        });
+        div.onclick = () => selectItem(opt);
 
         box.appendChild(div);
     });
@@ -567,26 +560,28 @@ function render() {
     box.style.display = "block";
 }
 
-// Select item (IMPORTANT: triggers onchange)
-function selectValue(opt) {
+// select item + trigger your onchange
+function selectItem(opt) {
     select.value = opt.value;
 
-    // trigger your existing functions
+    // triggers:
+    // showPerticularStocksEquityDataInTable()
+    // startExtraction()
     select.dispatchEvent(new Event("change"));
 
     input.value = opt.text;
     hide();
 }
 
-// Hide dropdown
+// hide dropdown
 function hide() {
     box.style.display = "none";
     activeIndex = -1;
 }
 
-// Filter input
+// search input
 input.addEventListener("input", () => {
-    const q = input.value.toLowerCase();
+    const q = input.value.trim().toLowerCase();
     activeIndex = -1;
 
     if (!q) {
@@ -594,25 +589,36 @@ input.addEventListener("input", () => {
         return;
     }
 
-    filtered = options.filter(o =>
-        o.text.toLowerCase().includes(q)
-    );
+    const options = Array.from(select.options)
+        .map(o => ({
+            text: (o.text || "").trim(),
+            value: o.value
+        }))
+        .filter(o => o.text.length > 0);
+
+    filtered = options.filter(o => {
+        const text = o.text.toLowerCase();
+
+        // 🔥 STRICT MATCHING RULES (fixes junk matches)
+        return text.startsWith(q);   // instead of includes()
+    });
 
     render();
 });
 
-// Keyboard navigation
+// keyboard navigation
 input.addEventListener("keydown", (e) => {
-    if (!filtered.length) return;
+    const items = box.querySelectorAll(".autocomplete-item");
+    if (!items.length) return;
 
     if (e.key === "ArrowDown") {
-        activeIndex = (activeIndex + 1) % filtered.length;
+        activeIndex = (activeIndex + 1) % items.length;
         render();
         e.preventDefault();
     }
 
     if (e.key === "ArrowUp") {
-        activeIndex = (activeIndex - 1 + filtered.length) % filtered.length;
+        activeIndex = (activeIndex - 1 + items.length) % items.length;
         render();
         e.preventDefault();
     }
@@ -620,19 +626,21 @@ input.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
         e.preventDefault();
         if (activeIndex >= 0) {
-            selectValue(filtered[activeIndex]);
+            selectItem(filtered[activeIndex]);
         }
     }
 });
 
-// Close on outside click
+// click outside closes dropdown
 document.addEventListener("click", (e) => {
     if (!box.contains(e.target) && e.target !== input) {
         hide();
     }
 });
-</script>
 
+// optional: run cleanup once after load
+window.addEventListener("load", cleanSelect);
+</script>
 <!--Seach Symbols End--> 
 
 <script>
