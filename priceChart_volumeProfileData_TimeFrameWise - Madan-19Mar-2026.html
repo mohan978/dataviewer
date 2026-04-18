@@ -442,15 +442,42 @@ display: none;
         }
   </style>
 
-  
+  <style>
+.autocomplete {
+    position: absolute;
+    border: 1px solid #ddd;
+    max-height: 220px;
+    overflow-y: auto;
+    background: black;
+    width: 260px;
+    display: none;
+    z-index: 9999;
+}
+
+.autocomplete-item {
+    padding: 8px;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+}
+
+.autocomplete-item:hover,
+.autocomplete-item.active {
+    background: #f0f0f0;
+}
+</style>
   
 <center>
 
 <hr>
 
  <label> Derivatives Symbols:</label>
+<input type="text" id="searchBox" placeholder="Search..." autocomplete="off">
+
 <select id="derivativesSymbols" onchange="showPerticularStocksEquityDataInTable();startExtraction();">
 </select>
+<div id="autocomplete" class="autocomplete"></div>
+
 <span>  
  	| No. of Entries: 		 <input id="numberOfPreviousEntries" type="number" value="60"  size="3">
 	| TimeFrame (Minutes): 		 <input id="timeFrameMinutes" type="number" value="5"  size="3">
@@ -484,6 +511,129 @@ display: none;
 <div id="chartBubble"></div>
 <br>
 
+<!--Seach Symbols Start --> 
+
+<script>
+const select = document.getElementById("derivativesSymbols");
+const input = document.getElementById("searchBox");
+const box = document.getElementById("autocomplete");
+
+let options = [];
+let filtered = [];
+let activeIndex = -1;
+
+// Wait until select is populated dynamically
+function waitForSelect(callback) {
+    const obs = new MutationObserver(() => {
+        if (select.options.length > 0) {
+            obs.disconnect();
+            callback();
+        }
+    });
+
+    obs.observe(select, { childList: true });
+}
+
+// Initialize
+waitForSelect(() => {
+    options = Array.from(select.options);
+});
+
+// Render dropdown
+function render() {
+    box.innerHTML = "";
+
+    if (filtered.length === 0) {
+        box.style.display = "none";
+        return;
+    }
+
+    filtered.forEach((opt, index) => {
+        const div = document.createElement("div");
+        div.className = "autocomplete-item";
+        div.textContent = opt.text;
+
+        if (index === activeIndex) {
+            div.classList.add("active");
+        }
+
+        div.addEventListener("click", () => {
+            selectValue(opt);
+        });
+
+        box.appendChild(div);
+    });
+
+    box.style.display = "block";
+}
+
+// Select item (IMPORTANT: triggers onchange)
+function selectValue(opt) {
+    select.value = opt.value;
+
+    // trigger your existing functions
+    select.dispatchEvent(new Event("change"));
+
+    input.value = opt.text;
+    hide();
+}
+
+// Hide dropdown
+function hide() {
+    box.style.display = "none";
+    activeIndex = -1;
+}
+
+// Filter input
+input.addEventListener("input", () => {
+    const q = input.value.toLowerCase();
+    activeIndex = -1;
+
+    if (!q) {
+        hide();
+        return;
+    }
+
+    filtered = options.filter(o =>
+        o.text.toLowerCase().includes(q)
+    );
+
+    render();
+});
+
+// Keyboard navigation
+input.addEventListener("keydown", (e) => {
+    if (!filtered.length) return;
+
+    if (e.key === "ArrowDown") {
+        activeIndex = (activeIndex + 1) % filtered.length;
+        render();
+        e.preventDefault();
+    }
+
+    if (e.key === "ArrowUp") {
+        activeIndex = (activeIndex - 1 + filtered.length) % filtered.length;
+        render();
+        e.preventDefault();
+    }
+
+    if (e.key === "Enter") {
+        e.preventDefault();
+        if (activeIndex >= 0) {
+            selectValue(filtered[activeIndex]);
+        }
+    }
+});
+
+// Close on outside click
+document.addEventListener("click", (e) => {
+    if (!box.contains(e.target) && e.target !== input) {
+        hide();
+    }
+});
+</script>
+
+<!--Seach Symbols End--> 
 
 <script>
 let showBubbles = true;
