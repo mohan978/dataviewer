@@ -1,0 +1,310 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Footprint Chart Dynamic Interval</title>
+
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+
+    <style>
+        body { margin:0; background:#111; font-family: Arial; }
+
+        textarea {
+            width:100%;
+            height:50px;
+            background:#000;
+            color:#0f0;
+        }
+
+        input, button {
+            padding:6px;
+            margin:5px;
+        }
+
+        button {
+            cursor:pointer;
+        }
+
+        #chartBubble {
+            width:98%;
+            height:80vh;
+            position:relative;
+        }
+
+        #bubbleCanvas {
+            position:absolute;
+            top:0;
+            left:0;
+            pointer-events:none;
+            z-index:10;
+        }
+    </style>
+</head>
+
+<body>
+
+<input type="file" id="fileInput" accept=".json,.txt">
+
+<textarea id="dataInput" placeholder="Paste or load JSON data..." oninput="runBubbleChart();"></textarea><br>
+
+<button onclick="clearInput()">Clear</button>
+
+<input id="intervalInput" placeholder="Interval (0=tick,1,5,15...)" value="5">
+
+<button onclick="runBubbleChart()">Load Chart</button>
+<button onclick="toggleBubbles(event)">Hide Bubbles</button>
+
+<input id="multiplierInput" placeholder="Dynamic Multiplier (e.g. 2)" value="0">
+<input id="bubbleSize" placeholder="Bubble Size Default (0.3)" value="0.3">
+<input id="BubblesCap" placeholder="Bubble Capecity (0.3)" value="0.35">
+
+<div id="chartBubble"></div>
+<br><br>
+
+<script>
+
+let showBubbles = true;
+
+// ===== FILE LOADER =====
+document.getElementById("fileInput").addEventListener("change", function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = function(event) {
+        document.getElementById("dataInput").value = event.target.result;
+        runBubbleChart();
+    };
+
+    reader.readAsText(file);
+});
+
+// ===== TOGGLE BUBBLES =====
+function toggleBubbles(e) {
+    showBubbles = !showBubbles;
+
+    if (e) {
+        e.target.innerText = showBubbles ? "Hide Bubbles" : "Show Bubbles";
+    }
+}
+
+// ===== MAIN FUNCTION =====
+function runBubbleChart() {
+
+    const bubbleScale = Number(document.getElementById("bubbleSize").value);
+    const BubblesCap = Number(document.getElementById("BubblesCap").value);
+   
+    let raw;
+
+    try {
+        raw = JSON.parse(document.getElementById("dataInput").value);
+    } catch (e) {
+        alert("❌ Invalid JSON data");
+        return;
+    }
+
+    const intervalMin = Number(document.getElementById("intervalInput").value);
+    const multiplier = Number(document.getElementById("multiplierInput").value);
+
+    const container = document.getElementById("chartBubble");
+    container.innerHTML = "";
+
+    const chart = LightweightCharts.createChart(container, {
+        layout: {
+            background: { color: '#111' },
+            textColor: '#DDD'
+        },
+        grid: {
+            vertLines: { visible: false },
+            horzLines: { visible: false }
+        },
+        crosshair: {
+            mode: LightweightCharts.CrosshairMode.Normal,
+            vertLine: { visible: false }
+        },
+        handleScroll: {
+            mouseWheel: true,
+            pressedMouseMove: true
+        },
+        handleScale: {
+            mouseWheel: true,
+            pinch: true,
+            axisPressedMouseMove: true
+        }
+    });
+
+    const candleSeries = chart.addSeries(LightweightCharts.CandlestickSeries, {
+        upColor: "#000",
+        downColor: "#000",
+        borderUpColor: "#00ff88",
+        borderDownColor: "#ff3b3b",
+    });
+
+    let buckets = {};
+    let bubbles = [];
+
+    // ===== CREATE BUBBLES & BUCKETS =====
+    Object.keys(raw).forEach(ts => {
+
+        const tMs = Number(ts);
+        const tSec = Math.floor((tMs + 19800000) / 1000);  // timezone offset
+
+        let bucketKey, bucketTime;
+
+        if (intervalMin === 0) {
+            bucketKey = tSec;
+            bucketTime = tSec;
+        } else {
+            const intervalSec = intervalMin * 60;
+            const bucketIndex = Math.floor(tSec / intervalSec);
+
+            bucketKey = bucketIndex;
+            bucketTime = bucketIndex * intervalSec;
+        }
+
+        if (!buckets[bucketKey]) {
+            buckets[bucketKey] = {
+                time: bucketTime,
+                prices: []
+            };
+        }
+
+        const hists = raw[ts].graphicsCmds?.create?.hhists;
+        if (!hists) return;
+
+        hists.forEach(h => {
+            h.data.forEach(d => {
+                const price = Number((d.priceHigh).toFixed(2));
+
+                buckets[bucketKey].prices.push(price);
+
+                bubbles.push({
+                    time: bucketTime,
+                    price: price,
+                    size: d.rate[0] + d.rate[1],
+                    delta: d.rate[0] - d.rate[1]
+                });
+            });
+        });
+    });
+
+    // ===== CALCULATE AVERAGE & FILTER =====
+    const rawBubbles = [...bubbles];
+    const allSizes = rawBubbles.map(b => b.size);
+    const avgSize = allSizes.reduce((a,b)=>a+b,0) / allSizes.length;
+
+    bubbles = rawBubbles.filter(b => b.size >= avgSize * multiplier);
+
+    // ===== CANDLE DATA =====
+    const candles = [];
+
+    Object.values(buckets).forEach(b => {
+        if (b.prices.length === 0) return;
+
+        candles.push({
+            time: b.time,
+            open: b.prices[0],
+            high: Math.max(...b.prices),
+            low: Math.min(...b.prices),
+            close: b.prices[b.prices.length - 1]
+        });
+    });
+
+    candles.sort((a,b)=>a.time-b.time);
+    candleSeries.setData(candles);
+
+    chart.timeScale().applyOptions({
+        timeVisible: true,
+        secondsVisible: true
+    });
+
+    chart.timeScale().fitContent();
+
+    // ===== CANVAS =====
+    const canvas = document.createElement("canvas");
+    canvas.id = "bubbleCanvas";
+    container.appendChild(canvas);
+    const ctx = canvas.getContext("2d");
+
+    function resize() {
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = container.clientWidth * dpr;
+        canvas.height = container.clientHeight * dpr;
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.scale(dpr, dpr);
+    }
+
+    resize();
+    window.addEventListener("resize", resize);
+
+    // Mouse tracking
+    let mouseX = null;
+    container.addEventListener("mousemove", (e) => {
+        const rect = container.getBoundingClientRect();
+        mouseX = e.clientX - rect.left;
+    });
+
+    container.addEventListener("mouseleave", () => {
+        mouseX = null;
+    });
+
+    // ===== DRAW =====
+    function draw() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+
+        const visibleRange = chart.timeScale().getVisibleRange();
+        if (!visibleRange) return;
+
+        // Draw bubbles only if toggled on
+        if (showBubbles) {
+            bubbles.forEach(b => {
+                if (b.time < visibleRange.from || b.time > visibleRange.to) return;
+
+                const x = chart.timeScale().timeToCoordinate(b.time);
+                const y = candleSeries.priceToCoordinate(b.price);
+                if (x == null || y == null) return;
+
+                const zoomFactor = canvas.width / 800;
+                const r = Math.max(1, (Math.sqrt(b.size) * bubbleScale) / zoomFactor);
+
+                // Lighter bubble color with alpha scaling
+                const alpha = BubblesCap;  //0.35; // all bubbles have same lightness
+                //const alpha = Math.min(0.5, 0.1 + 0.2 * Math.sqrt(b.size) / 10);
+                ctx.beginPath();
+                ctx.arc(x, y, r, 0, Math.PI * 2);
+                ctx.fillStyle = b.delta > 0
+                    ? `rgba(0,255,0,${alpha})`
+                    : `rgba(255,0,0,${alpha})`;
+                ctx.fill();
+            });
+        }
+
+        // Draw vertical crosshair always
+        if (mouseX !== null) {
+            ctx.beginPath();
+            ctx.moveTo(mouseX, 0);
+            ctx.lineTo(mouseX, canvas.height);
+            ctx.strokeStyle = "#888";
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+    }
+
+    function animate() {
+        draw();
+        requestAnimationFrame(animate);
+    }
+
+    animate();
+    chart.timeScale().subscribeVisibleTimeRangeChange(draw);
+}
+
+// ===== CLEAR INPUT =====
+function clearInput() {
+    document.getElementById("dataInput").value="";
+    document.getElementById("dataInput").focus();
+}
+
+</script>
+</body>
+</html>
